@@ -40,15 +40,13 @@ struct ProfileFormView: View {
                         .disableAutocorrection(true)
                 }
 
-                if editingProfile == nil {
-                    Section(header: Text("Name")) {
-                        TextField("Prename (optional)", text: $prename)
-                            .autocapitalization(.words)
-                            .disableAutocorrection(true)
-                        TextField("Name (optional)", text: $name)
-                            .autocapitalization(.words)
-                            .disableAutocorrection(true)
-                    }
+                Section(header: Text("Name")) {
+                    TextField("Prename (optional)", text: $prename)
+                        .autocapitalization(.words)
+                        .disableAutocorrection(true)
+                    TextField("Name (optional)", text: $name)
+                        .autocapitalization(.words)
+                        .disableAutocorrection(true)
                 }
 
                 Section(header: Text("Date of Birth")) {
@@ -110,3 +108,4 @@ struct ProfileFormView: View {
         }
     }
 }
+

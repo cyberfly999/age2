@@ -7,55 +7,217 @@
 
 import SwiftUI
 import SwiftData
+import AuthenticationServices
+import UIKit
+internal import Combine
+
+// MARK: - ContentView
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+
+    @Query private var profiles: [UserProfile]
+
+    @State private var showOnboarding = true
+    @State private var onboardingSelection: String? = nil
+
+    @State private var showProfileForm = false
+    @State private var activeProfile: UserProfile? = nil
+    
+    @State private var now = Date()
+    
+    // Computed property to calculate lifetime in seconds formatted string, using current 'now' date for live update
+    private var lifetimeInSecondsText: String {
+        guard let profile = activeProfile else { return "" }
+        let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
+        let runningAge = RunningAge(birthdate: profile.dateOfBirth, birthtime: profile.timeOfBirth, timeZone: timeZone)
+        let seconds = runningAge.calculateLifetimeInSeconds(currentDate: now)
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.maximumFractionDigits = 0
+        let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(Int(seconds))"
+        return "You are \(formatted) seconds old"
+    }
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        Group {
+            if let profile = activeProfile {
+                // Main app view with greeting
+                NavigationView {
+                    ZStack {
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color.blue.opacity(0.45),
+                                Color.purple.opacity(0.55)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                        .ignoresSafeArea()
+
+                        VStack(spacing: 20) {
+                            Text("Hello, \(profile.nickname)!")
+                                .font(.largeTitle)
+                                .foregroundColor(.white)
+                                .shadow(radius: 5)
+							
+							Text(lifetimeInSecondsText)
+                                .foregroundColor(.white)
+                        }
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button(action: {
+                                profileFormInitial = profile
+                                showProfileForm = true
+                            }) {
+                                Image(systemName: "person.crop.circle")
+                                    .imageScale(.large)
+                            }
+                        }
+                    }
+                    .navigationBarTitleDisplayMode(.inline)
+                }
+            } else {
+                // Show background while waiting for profile
+                ZStack {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.blue.opacity(0.45),
+                            Color.purple.opacity(0.55)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .ignoresSafeArea()
+                }
+            }
+        }
+        .onAppear {
+            showOnboarding = !hasCompletedOnboarding
+
+            if !showOnboarding {
+                // Try to load activeProfile from existing profiles if available
+                if let first = profiles.first {
+                    activeProfile = first
+                } else {
+                    // No profile exists, force onboarding
+                    showOnboarding = true
+                }
+            }
+        }
+        .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
+            now = time
+        }
+        .sheet(isPresented: $showOnboarding, onDismiss: {
+            // If onboarding finished but no profile, present profile form
+            if activeProfile == nil {
+                showProfileForm = true
+            }
+        }) {
+            OnboardingView { selection in
+                onboardingSelection = selection
+                hasCompletedOnboarding = true
+
+                if selection == "iosUser" {
+                    // Try to get device name as nickname with fallback
+                    let deviceName = UIDevice.current.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                    // Pre-fill nickname with device name or fallback
+                    let defaultNickname = deviceName.isEmpty ? "User" : deviceName
+                    // Create a temporary UserProfile with defaults and empty date/time, nil name/prename
+                    let tempProfile = UserProfile(
+                        nickname: defaultNickname,
+                        name: nil,
+                        prename: nil,
+                        dateOfBirth: Date(),
+                        timeOfBirth: Date(),
+                        gender: nil,
+                        timeZoneIdentifier: TimeZone.current.identifier
+                    )
+                    activeProfile = nil
+                    showOnboarding = false
+                    showProfileForm = true
+                    profileFormInitial = tempProfile
+                } else if selection == "create" {
+                    // Present empty form for new profile creation
+                    activeProfile = nil
+                    showOnboarding = false
+                    showProfileForm = true
+                    profileFormInitial = nil
+                }
+            }
+        }
+        .sheet(isPresented: $showProfileForm, onDismiss: {
+            // If profile form dismissed but no active profile, maybe handle fallback if needed
+        }) {
+            ProfileFormView(
+                initialProfile: profileFormInitial,
+                onComplete: { profile in
+                    // Save profile to model context and update activeProfile
+                    if let existingIndex = profiles.firstIndex(where: { $0.id == profile.id }) {
+                        // Update existing
+                        let existing = profiles[existingIndex]
+                        existing.nickname = profile.nickname
+                        existing.name = profile.name
+                        existing.prename = profile.prename
+                        existing.dateOfBirth = profile.dateOfBirth
+                        existing.timeOfBirth = profile.timeOfBirth
+                        existing.gender = profile.gender
+                        existing.timeZoneIdentifier = profile.timeZoneIdentifier
+                    } else {
+                        // Insert new profile
+                        modelContext.insert(profile)
+                    }
+                    do {
+                        try modelContext.save()
+                        activeProfile = profile
+                        showProfileForm = false
+                    } catch {
+                        // Handle save error if needed
+                        print("Failed to save profile: \(error)")
+                    }
+                },
+                onCancel: {
+                    // Only show onboarding if there are truly no profiles and no active profile
+                    if profiles.isEmpty && activeProfile == nil {
+                        showOnboarding = true
+                        showProfileForm = false
+                    } else {
+                        // Dismiss form and keep the current user profile without showing onboarding
+                        // This prevents onboarding from being shown again after the first profile was created and saved,
+                        // and keeps the profile when canceling.
+                        showProfileForm = false
                     }
                 }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
+            )
         }
     }
 
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
-    }
+    @State private var profileFormInitial: UserProfile? = nil
 }
+
+// MARK: - Preview
 
 #Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+    // Create a temporary in-memory model container with a dummy profile for preview
+//    let container = try! ModelContainer(for: UserProfile.self)
+//    let context = container.mainContext
+//    
+//    let dummyProfile = UserProfile(
+//        nickname: "VinzenzH",
+//        name: "Hehlen",
+//        prename: "Vinzenz",
+//        dateOfBirth: Calendar.current.date(from: DateComponents(year: 1990, month: 5, day: 20)) ?? Date(),
+//        timeOfBirth: Calendar.current.date(from: DateComponents(hour: 15, minute: 30)) ?? Date(),
+//        gender: "Male",
+//        timeZoneIdentifier: TimeZone.current.identifier
+//    )
+//    
+//    try? context.insert(dummyProfile)
+//    try? context.save()
+    
+    return ContentView()
+       // .modelContainer(container)
 }
+
