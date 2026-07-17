@@ -10,6 +10,7 @@ import SwiftData
 import AuthenticationServices
 import UIKit
 internal import Combine
+import Foundation
 
 // MARK: - ContentView
 
@@ -39,6 +40,44 @@ struct ContentView: View {
         let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(Int(seconds))"
         return "You are \(formatted) seconds old"
     }
+    
+    private var zodiacSignText: String {
+        guard let profile = activeProfile else { return "" }
+        let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
+        
+        // Combine dateOfBirth and timeOfBirth into one Date in the profile's timeZone
+        var calendar = Calendar.current
+        calendar.timeZone = timeZone
+        
+        let birthDateComponents = calendar.dateComponents([.year, .month, .day], from: profile.dateOfBirth)
+        let birthTimeComponents = calendar.dateComponents([.hour, .minute, .second], from: profile.timeOfBirth)
+        
+        var combinedComponents = DateComponents()
+        combinedComponents.year = birthDateComponents.year
+        combinedComponents.month = birthDateComponents.month
+        combinedComponents.day = birthDateComponents.day
+        combinedComponents.hour = birthTimeComponents.hour
+        combinedComponents.minute = birthTimeComponents.minute
+        combinedComponents.second = birthTimeComponents.second
+        
+        guard let combinedDate = calendar.date(from: combinedComponents) else {
+            return ""
+        }
+        
+        let formatter = DateFormatter()
+        formatter.timeZone = timeZone
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        let formattedDateTime = formatter.string(from: combinedDate)
+        
+		let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
+        let zodiac = zodiacCalculator.zodiacSign ?? ""
+        
+        if zodiac.isEmpty {
+            return ""
+        } else {
+            return "Zodiac: \(zodiac)"
+        }
+    }
 
     var body: some View {
         Group {
@@ -64,6 +103,11 @@ struct ContentView: View {
 							
 							Text(lifetimeInSecondsText)
                                 .foregroundColor(.white)
+							// add zodiac here
+                            if !zodiacSignText.isEmpty {
+                                Text(zodiacSignText)
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
                     .toolbar {
