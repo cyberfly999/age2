@@ -11,6 +11,7 @@ import AuthenticationServices
 import UIKit
 internal import Combine
 import Foundation
+import UserNotifications
 
 // MARK: - ContentView
 
@@ -78,6 +79,21 @@ struct ContentView: View {
             return String(localized: "Zodiac: \(zodiac)")
         }
     }
+    
+    private func triggerTestNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Test Notification"
+        content.body = "This is a test local notification."
+        content.sound = .default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Failed to schedule notification: \(error)")
+            }
+        }
+    }
 
     var body: some View {
         Group {
@@ -108,6 +124,16 @@ struct ContentView: View {
                                 Text(zodiacSignText)
                                     .foregroundColor(.white)
                             }
+                            
+                            Button(action: triggerTestNotification) {
+                                Text("Notify")
+                                    .foregroundColor(.blue)
+                                    .padding(.horizontal)
+                                    .padding(.vertical, 8)
+                                    .background(Color.black.opacity(0.8))
+                                    .cornerRadius(8)
+                            }
+                            .accessibilityLabel(Text("Send Test Notification"))
                         }
                     }
                     .toolbar {
@@ -216,6 +242,7 @@ struct ContentView: View {
                     }
                     do {
                         try modelContext.save()
+                        NotificationManager.shared.setupNotifications()
                         activeProfile = profile
                         showProfileForm = false
                     } catch {
