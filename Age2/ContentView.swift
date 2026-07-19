@@ -164,40 +164,52 @@ struct ContentView: View {
                         )
                         .ignoresSafeArea()
 
-                        VStack(spacing: 20) {
-                            Text("Hello, \(profile.nickname)!")
-                                .font(.largeTitle)
-                                .foregroundColor(.white)
-                                .shadow(radius: 5)
+						VStack(spacing: 20) {
+							Text("Hello, \(profile.nickname)!")
+								.font(.largeTitle)
+								.foregroundColor(.white)
+								.shadow(radius: 5)
 							
 							Text(lifetimeInSecondsText)
-                                .foregroundColor(.white)
+								.foregroundColor(.white)
 							// add zodiac here
-                            if !zodiacSignText.isEmpty {
-                                Text(zodiacSignText)
-                                    .foregroundColor(.white)
-                            }
-                            
-                            Button(action: triggerTestNotification) {
-                                Text("Notify")
+							if !zodiacSignText.isEmpty {
+								Text(zodiacSignText)
+									.foregroundColor(.white)
+							}
+							
+							Button(action: triggerTestNotification) {
+								Text("Notify")
 									.foregroundColor(.cyan)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 8)
-                                    .background(Color.black.opacity(0.8))
-                                    .cornerRadius(8)
-                            }
-                            .accessibilityLabel(Text("Send Test Notification"))
-                            
-                            Button(action: scheduleTenNotifications) {
-                                Text("Notify x10")
-                                    .foregroundColor(.cyan)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 8)
-                                    .background(Color.black.opacity(0.8))
-                                    .cornerRadius(8)
-                            }
-                            .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
-                        }
+									.padding(.horizontal, 8)
+									.padding(.vertical, 8)
+									.background(Color.black.opacity(0.8))
+									.cornerRadius(8)
+							}
+							.accessibilityLabel(Text("Send Test Notification"))
+							
+							Button(action: scheduleTenNotifications) {
+								Text("Notify x10")
+									.foregroundColor(.cyan)
+									.padding(.horizontal, 8)
+									.padding(.vertical, 8)
+									.background(Color.black.opacity(0.8))
+									.cornerRadius(8)
+							}
+							.accessibilityLabel(Text("Send 10 Scheduled Notifications"))
+							
+							Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
+								Text("Send a couple of  Scheduled Notifications")
+									.foregroundColor(.cyan)
+									.padding(.horizontal, 8)
+									.padding(.vertical, 8)
+									.background(Color.black.opacity(0.8))
+									.cornerRadius(8)
+							}
+							.accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
+
+							
+						}
                     }
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
