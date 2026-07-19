@@ -13,6 +13,19 @@ internal import Combine
 import Foundation
 import UserNotifications
 
+/// Ensures notification permissions are requested on app launch or before scheduling notifications.
+private func requestNotificationAuthorizationIfNeeded() {
+    UNUserNotificationCenter.current().getNotificationSettings { settings in
+        guard settings.authorizationStatus != .authorized else { return }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Notification permission error: \(error)")
+            }
+            // You might want to handle 'granted == false' here.
+        }
+    }
+}
+
 // MARK: - ContentView
 
 struct ContentView: View {
@@ -80,6 +93,12 @@ struct ContentView: View {
         }
     }
     
+    /// Requests notification permission if not already granted.
+    private func setupNotifications() {
+        requestNotificationAuthorizationIfNeeded()
+    }
+    
+    /// Schedules a local notification that will be delivered even if the app is in the background, inactive, or closed—provided notification permissions are granted by the user.
     private func triggerTestNotification() {
         let content = UNMutableNotificationContent()
         content.title = "Test Notification"
@@ -91,6 +110,23 @@ struct ContentView: View {
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Failed to schedule notification: \(error)")
+            }
+        }
+    }
+    
+    /// Schedules 10 notifications, each 100 seconds apart, starting from now.
+    private func scheduleTenNotifications() {
+        for i in 1...10 {
+            let content = UNMutableNotificationContent()
+            content.title = "Scheduled Notification #\(i)"
+            content.body = "This is notification #\(i) of 10."
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(100 * i), repeats: false)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("Failed to schedule notification #\(i): \(error)")
+                }
             }
         }
     }
@@ -127,13 +163,23 @@ struct ContentView: View {
                             
                             Button(action: triggerTestNotification) {
                                 Text("Notify")
-                                    .foregroundColor(.blue)
-                                    .padding(.horizontal)
+									.foregroundColor(.cyan)
+                                    .padding(.horizontal, 8)
                                     .padding(.vertical, 8)
                                     .background(Color.black.opacity(0.8))
                                     .cornerRadius(8)
                             }
                             .accessibilityLabel(Text("Send Test Notification"))
+                            
+                            Button(action: scheduleTenNotifications) {
+                                Text("Notify x10")
+                                    .foregroundColor(.cyan)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 8)
+                                    .background(Color.black.opacity(0.8))
+                                    .cornerRadius(8)
+                            }
+                            .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
                         }
                     }
                     .toolbar {
@@ -166,6 +212,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            setupNotifications() // Requests notification permission if not granted
             showOnboarding = !hasCompletedOnboarding
 
             if !showOnboarding {
