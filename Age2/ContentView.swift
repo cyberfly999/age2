@@ -38,7 +38,7 @@ struct ContentView: View {
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
         let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(Int(seconds))"
-        return "You are \(formatted) seconds old"
+        return String(localized: "You are \(formatted) seconds old")
     }
     
     private var zodiacSignText: String {
@@ -75,7 +75,7 @@ struct ContentView: View {
         if zodiac.isEmpty {
             return ""
         } else {
-            return "Zodiac: \(zodiac)"
+            return String(localized: "Zodiac: \(zodiac)")
         }
     }
 
@@ -119,6 +119,7 @@ struct ContentView: View {
                                 Image(systemName: "person.crop.circle")
                                     .imageScale(.large)
                             }
+                            .accessibilityLabel(Text("Edit Profile"))
                         }
                     }
                     .navigationBarTitleDisplayMode(.inline)
@@ -168,7 +169,7 @@ struct ContentView: View {
                     // Try to get device name as nickname with fallback
                     let deviceName = UIDevice.current.name.trimmingCharacters(in: .whitespacesAndNewlines)
                     // Pre-fill nickname with device name or fallback
-                    let defaultNickname = deviceName.isEmpty ? "User" : deviceName
+                    let defaultNickname = deviceName.isEmpty ? String(localized: "User") : deviceName
                     // Create a temporary UserProfile with defaults and empty date/time, nil name/prename
                     let tempProfile = UserProfile(
                         nickname: defaultNickname,
@@ -244,24 +245,6 @@ struct ContentView: View {
 // MARK: - Preview
 
 #Preview {
-    // Create a temporary in-memory model container with a dummy profile for preview
-//    let container = try! ModelContainer(for: UserProfile.self)
-//    let context = container.mainContext
-//    
-//    let dummyProfile = UserProfile(
-//        nickname: "VinzenzH",
-//        name: "Hehlen",
-//        prename: "Vinzenz",
-//        dateOfBirth: Calendar.current.date(from: DateComponents(year: 1990, month: 5, day: 20)) ?? Date(),
-//        timeOfBirth: Calendar.current.date(from: DateComponents(hour: 15, minute: 30)) ?? Date(),
-//        gender: "Male",
-//        timeZoneIdentifier: TimeZone.current.identifier
-//    )
-//    
-//    try? context.insert(dummyProfile)
-//    try? context.save()
-    
-    return ContentView()
-       // .modelContainer(container)
+	return ContentView()
 }
 
