@@ -42,6 +42,14 @@ struct ContentView: View {
     
     @State private var now = Date()
     
+    @State private var showSplash = true
+    
+    // Added deferred state properties for onboarding/profile presentation
+    @State private var deferredOnboardingNeeded = false
+    @State private var deferredOnboardingSelection: String? = nil
+    @State private var deferredProfileFormNeeded = false
+    @State private var deferredProfileFormInitial: UserProfile? = nil
+
     // Computed property to calculate lifetime in seconds formatted string, using current 'now' date for live update
     private var lifetimeInSecondsText: String {
         guard let profile = activeProfile else { return "" }
@@ -135,7 +143,7 @@ struct ContentView: View {
 	private func scheduleMultipleNotifications(number: Int, interval: Int) {
 		for i in 1...number {
 			let content = UNMutableNotificationContent()
-			content.title = "Scheduled Notification #\(i)"
+			content.title = "Scheduled Notificationgedonner #\(i)"
 			content.body = "This is notification #\(i) of \(number)."
 			content.sound = .default
 			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(interval * i), repeats: false)
@@ -147,12 +155,109 @@ struct ContentView: View {
 			}
 		}
 	}
+    
+    private var splashView: some View {
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue, Color.purple]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            VStack(spacing: 16) {
+                Image(systemName: "sparkles")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(.white)
+                Text("Welcome to Age2")
+                    .font(.largeTitle).bold()
+                    .foregroundColor(.white)
+            }
+        }
+        .transition(.opacity)
+    }
 
- var body: some View {
-        Group {
-            if let profile = activeProfile {
-                // Main app view with greeting
-                NavigationView {
+    var body: some View {
+        ZStack {
+            Group {
+                if let profile = activeProfile {
+                    // Main app view with greeting
+                    NavigationView {
+                        ZStack {
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.blue.opacity(0.45),
+                                    Color.purple.opacity(0.55)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                            .ignoresSafeArea()
+
+							VStack(spacing: 20) {
+								Text("Hello, \(profile.nickname)!")
+									.font(.largeTitle)
+									.foregroundColor(.white)
+									.shadow(radius: 5)
+								
+								Text(lifetimeInSecondsText)
+									.foregroundColor(.white)
+								// add zodiac here
+								if !zodiacSignText.isEmpty {
+									Text(zodiacSignText)
+										.foregroundColor(.white)
+								}
+								
+								Button(action: triggerTestNotification) {
+									Text("Notify")
+										.foregroundColor(.cyan)
+										.padding(.horizontal, 8)
+										.padding(.vertical, 8)
+										.background(Color.black.opacity(0.8))
+										.cornerRadius(8)
+								}
+								.accessibilityLabel(Text("Send Test Notification"))
+								
+								Button(action: scheduleTenNotifications) {
+									Text("Notify x10")
+										.foregroundColor(.cyan)
+										.padding(.horizontal, 8)
+										.padding(.vertical, 8)
+										.background(Color.black.opacity(0.8))
+										.cornerRadius(8)
+								}
+								.accessibilityLabel(Text("Send 10 Scheduled Notifications"))
+								
+								Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
+									Text("Send a couple of  Scheduled Notifications")
+										.foregroundColor(.cyan)
+										.padding(.horizontal, 8)
+										.padding(.vertical, 8)
+										.background(Color.black.opacity(0.8))
+										.cornerRadius(8)
+								}
+								.accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
+
+								
+							}
+                        }
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button(action: {
+                                    profileFormInitial = profile
+                                    showProfileForm = true
+                                }) {
+                                    Image(systemName: "person.crop.circle")
+                                        .imageScale(.large)
+                                }
+                                .accessibilityLabel(Text("Edit Profile"))
+                            }
+                        }
+                        .navigationBarTitleDisplayMode(.inline)
+                    }
+                } else {
+                    // Show background while waiting for profile
                     ZStack {
                         LinearGradient(
                             gradient: Gradient(colors: [
@@ -163,94 +268,30 @@ struct ContentView: View {
                             endPoint: .bottomTrailing
                         )
                         .ignoresSafeArea()
-
-						VStack(spacing: 20) {
-							Text("Hello, \(profile.nickname)!")
-								.font(.largeTitle)
-								.foregroundColor(.white)
-								.shadow(radius: 5)
-							
-							Text(lifetimeInSecondsText)
-								.foregroundColor(.white)
-							// add zodiac here
-							if !zodiacSignText.isEmpty {
-								Text(zodiacSignText)
-									.foregroundColor(.white)
-							}
-							
-							Button(action: triggerTestNotification) {
-								Text("Notify")
-									.foregroundColor(.cyan)
-									.padding(.horizontal, 8)
-									.padding(.vertical, 8)
-									.background(Color.black.opacity(0.8))
-									.cornerRadius(8)
-							}
-							.accessibilityLabel(Text("Send Test Notification"))
-							
-							Button(action: scheduleTenNotifications) {
-								Text("Notify x10")
-									.foregroundColor(.cyan)
-									.padding(.horizontal, 8)
-									.padding(.vertical, 8)
-									.background(Color.black.opacity(0.8))
-									.cornerRadius(8)
-							}
-							.accessibilityLabel(Text("Send 10 Scheduled Notifications"))
-							
-							Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
-								Text("Send a couple of  Scheduled Notifications")
-									.foregroundColor(.cyan)
-									.padding(.horizontal, 8)
-									.padding(.vertical, 8)
-									.background(Color.black.opacity(0.8))
-									.cornerRadius(8)
-							}
-							.accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
-
-							
-						}
                     }
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: {
-                                profileFormInitial = profile
-                                showProfileForm = true
-                            }) {
-                                Image(systemName: "person.crop.circle")
-                                    .imageScale(.large)
-                            }
-                            .accessibilityLabel(Text("Edit Profile"))
-                        }
-                    }
-                    .navigationBarTitleDisplayMode(.inline)
                 }
-            } else {
-                // Show background while waiting for profile
-                ZStack {
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.blue.opacity(0.45),
-                            Color.purple.opacity(0.55)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .ignoresSafeArea()
-                }
+            }
+            if showSplash {
+                splashView
+                    .zIndex(2)
             }
         }
         .onAppear {
-            setupNotifications() // Requests notification permission if not granted
-            showOnboarding = !hasCompletedOnboarding
-
-            if !showOnboarding {
-                // Try to load activeProfile from existing profiles if available
-                if let first = profiles.first {
+            setupNotifications()
+            showOnboarding = false
+            showProfileForm = false
+            // Defer onboarding/profile triggers until after splash
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showSplash = false
+                }
+                // Decide what to present after splash
+                if !hasCompletedOnboarding {
+                    deferredOnboardingNeeded = true
+                } else if let first = profiles.first {
                     activeProfile = first
                 } else {
-                    // No profile exists, force onboarding
-                    showOnboarding = true
+                    deferredOnboardingNeeded = true
                 }
             }
         }
@@ -258,9 +299,8 @@ struct ContentView: View {
             now = time
         }
         .sheet(isPresented: $showOnboarding, onDismiss: {
-            // If onboarding finished but no profile, present profile form
             if activeProfile == nil {
-                showProfileForm = true
+                deferredProfileFormNeeded = true
             }
         }) {
             OnboardingView { selection in
@@ -284,14 +324,24 @@ struct ContentView: View {
                     )
                     activeProfile = nil
                     showOnboarding = false
-                    showProfileForm = true
-                    profileFormInitial = tempProfile
+                    if showSplash {
+                        deferredProfileFormNeeded = true
+                        profileFormInitial = tempProfile
+                    } else {
+                        showProfileForm = true
+                        profileFormInitial = tempProfile
+                    }
                 } else if selection == "create" {
                     // Present empty form for new profile creation
                     activeProfile = nil
                     showOnboarding = false
-                    showProfileForm = true
-                    profileFormInitial = nil
+                    if showSplash {
+                        deferredProfileFormNeeded = true
+                        profileFormInitial = nil
+                    } else {
+                        showProfileForm = true
+                        profileFormInitial = nil
+                    }
                 }
             }
         }
@@ -340,6 +390,18 @@ struct ContentView: View {
                 }
             )
         }
+        .onChange(of: showSplash) { oldValue, newValue in
+            if !newValue {
+                if deferredOnboardingNeeded {
+                    showOnboarding = true
+                    deferredOnboardingNeeded = false
+                }
+                if deferredProfileFormNeeded {
+                    showProfileForm = true
+                    deferredProfileFormNeeded = false
+                }
+            }
+        }
     }
 
     @State private var profileFormInitial: UserProfile? = nil
@@ -350,4 +412,3 @@ struct ContentView: View {
 #Preview {
 	return ContentView()
 }
-
