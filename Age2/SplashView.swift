@@ -6,6 +6,9 @@
 import SwiftUI
 
 struct SplashView: View {
+    @State private var rotation: Double = 0
+    var rotationDuration: Double = 2.0 // Configurable speed in seconds per rotation
+    
     var body: some View {
         ZStack {
             LinearGradient(
@@ -20,7 +23,13 @@ struct SplashView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
                     .foregroundColor(.white)
-                Text("Welcome to Age2")
+                    .rotationEffect(.degrees(rotation))
+                    .onAppear {
+                        withAnimation(Animation.linear(duration: rotationDuration).repeatForever(autoreverses: false)) {
+                            rotation = 360
+                        }
+                    }
+                Text("Welcome to your Era")
                     .font(.largeTitle).bold()
                     .foregroundColor(.white)
             }
@@ -31,6 +40,6 @@ struct SplashView: View {
 
 #if DEBUG
 #Preview {
-    SplashView()
+    SplashView(rotationDuration: 1.5)
 }
 #endif
