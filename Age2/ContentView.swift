@@ -94,7 +94,7 @@ struct ContentView: View {
         if zodiac.isEmpty {
             return ""
         } else {
-            return String(localized: "Zodiac: \(zodiac)")
+            return String(localized: "Your Zodiac is \(zodiac)")
         }
     }
     
