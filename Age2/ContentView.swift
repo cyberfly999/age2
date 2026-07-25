@@ -152,28 +152,6 @@ struct ContentView: View {
             }
         }
     }
-    
-    private var splashView: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [Color.blue, Color.purple]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            VStack(spacing: 16) {
-                Image(systemName: "sparkles")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 80, height: 80)
-                    .foregroundColor(.white)
-                Text("Welcome to Age2")
-                    .font(.largeTitle).bold()
-                    .foregroundColor(.white)
-            }
-        }
-        .transition(.opacity)
-    }
 
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
@@ -273,7 +251,7 @@ struct ContentView: View {
                 }
             }
             if showSplash {
-                splashView
+                SplashView()
                     .zIndex(2)
             }
         }
