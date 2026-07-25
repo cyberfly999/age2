@@ -43,6 +43,7 @@ struct ContentView: View {
     @State private var now = Date()
     
     @State private var showSplash = true
+	private let showSplashFor: TimeInterval = 3
 
     private var hasProfile: Bool { profiles.first != nil }
 
@@ -280,8 +281,8 @@ struct ContentView: View {
             // Always reset splash on every app launch, including after being killed
             showSplash = true
             setupNotifications()
-            // At launch, show splash for 3 seconds then fade out and decide next screen
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            // At launch, show splash for n seconds as in let showSplashFor then fade out and decide next screen
+            DispatchQueue.main.asyncAfter(deadline: .now() + showSplashFor) {
                 withAnimation(.easeOut(duration: 0.5)) {
                     showSplash = false
                 }
