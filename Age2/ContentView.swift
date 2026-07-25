@@ -34,21 +34,17 @@ struct ContentView: View {
 
     @Query private var profiles: [UserProfile]
 
-    @State private var showOnboarding = true
-    @State private var onboardingSelection: String? = nil
-
+    // Control flags for onboarding and profile form visibility
+    @State private var showOnboarding = false
     @State private var showProfileForm = false
+
     @State private var activeProfile: UserProfile? = nil
     
     @State private var now = Date()
     
     @State private var showSplash = true
-    
-    // Added deferred state properties for onboarding/profile presentation
-    @State private var deferredOnboardingNeeded = false
-    @State private var deferredOnboardingSelection: String? = nil
-    @State private var deferredProfileFormNeeded = false
-    @State private var deferredProfileFormInitial: UserProfile? = nil
+
+    private var hasProfile: Bool { profiles.first != nil }
 
     // Computed property to calculate lifetime in seconds formatted string, using current 'now' date for live update
     private var lifetimeInSecondsText: String {
@@ -91,7 +87,7 @@ struct ContentView: View {
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         let formattedDateTime = formatter.string(from: combinedDate)
         
-		let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
+        let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
         let zodiac = zodiacCalculator.zodiacSign ?? ""
         
         if zodiac.isEmpty {
@@ -122,39 +118,39 @@ struct ContentView: View {
         }
     }
     
-	/// Schedules 10 notifications, each 100 seconds apart, starting from now.
-	private func scheduleTenNotifications() {
-		for i in 1...10 {
-			let content = UNMutableNotificationContent()
-			content.title = "Scheduled Notification #\(i)"
-			content.body = "This is notification #\(i) of 10."
-			content.sound = .default
-			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(100 * i), repeats: false)
-			let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-			UNUserNotificationCenter.current().add(request) { error in
-				if let error = error {
-					print("Failed to schedule notification #\(i): \(error)")
-				}
-			}
-		}
-	}
+    /// Schedules 10 notifications, each 100 seconds apart, starting from now.
+    private func scheduleTenNotifications() {
+        for i in 1...10 {
+            let content = UNMutableNotificationContent()
+            content.title = "Scheduled Notification #\(i)"
+            content.body = "This is notification #\(i) of 10."
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(100 * i), repeats: false)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("Failed to schedule notification #\(i): \(error)")
+                }
+            }
+        }
+    }
 
-	/// Schedules notifications from now
-	private func scheduleMultipleNotifications(number: Int, interval: Int) {
-		for i in 1...number {
-			let content = UNMutableNotificationContent()
-			content.title = "Scheduled Notificationgedonner #\(i)"
-			content.body = "This is notification #\(i) of \(number)."
-			content.sound = .default
-			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(interval * i), repeats: false)
-			let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-			UNUserNotificationCenter.current().add(request) { error in
-				if let error = error {
-					print("Failed to schedule notification #\(i): \(error)")
-				}
-			}
-		}
-	}
+    /// Schedules notifications from now
+    private func scheduleMultipleNotifications(number: Int, interval: Int) {
+        for i in 1...number {
+            let content = UNMutableNotificationContent()
+            content.title = "Scheduled Notificationgedonner #\(i)"
+            content.body = "This is notification #\(i) of \(number)."
+            content.sound = .default
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(interval * i), repeats: false)
+            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("Failed to schedule notification #\(i): \(error)")
+                }
+            }
+        }
+    }
     
     private var splashView: some View {
         ZStack {
@@ -179,6 +175,10 @@ struct ContentView: View {
     }
 
     var body: some View {
+        // Prevent onboarding/profile form if a profile exists
+        let shouldShowOnboarding = showOnboarding && !hasProfile && !showSplash
+        let shouldShowProfileForm = showProfileForm && !hasProfile && !showSplash && !showOnboarding
+        
         ZStack {
             Group {
                 if let profile = activeProfile {
@@ -195,52 +195,52 @@ struct ContentView: View {
                             )
                             .ignoresSafeArea()
 
-							VStack(spacing: 20) {
-								Text("Hello, \(profile.nickname)!")
-									.font(.largeTitle)
-									.foregroundColor(.white)
-									.shadow(radius: 5)
-								
-								Text(lifetimeInSecondsText)
-									.foregroundColor(.white)
-								// add zodiac here
-								if !zodiacSignText.isEmpty {
-									Text(zodiacSignText)
-										.foregroundColor(.white)
-								}
-								
-								Button(action: triggerTestNotification) {
-									Text("Notify")
-										.foregroundColor(.cyan)
-										.padding(.horizontal, 8)
-										.padding(.vertical, 8)
-										.background(Color.black.opacity(0.8))
-										.cornerRadius(8)
-								}
-								.accessibilityLabel(Text("Send Test Notification"))
-								
-								Button(action: scheduleTenNotifications) {
-									Text("Notify x10")
-										.foregroundColor(.cyan)
-										.padding(.horizontal, 8)
-										.padding(.vertical, 8)
-										.background(Color.black.opacity(0.8))
-										.cornerRadius(8)
-								}
-								.accessibilityLabel(Text("Send 10 Scheduled Notifications"))
-								
-								Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
-									Text("Send a couple of  Scheduled Notifications")
-										.foregroundColor(.cyan)
-										.padding(.horizontal, 8)
-										.padding(.vertical, 8)
-										.background(Color.black.opacity(0.8))
-										.cornerRadius(8)
-								}
-								.accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
+                            VStack(spacing: 20) {
+                                Text("Hello, \(profile.nickname)!")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.white)
+                                    .shadow(radius: 5)
+                                
+                                Text(lifetimeInSecondsText)
+                                    .foregroundColor(.white)
+                                // add zodiac here
+                                if !zodiacSignText.isEmpty {
+                                    Text(zodiacSignText)
+                                        .foregroundColor(.white)
+                                }
+                                
+                                Button(action: triggerTestNotification) {
+                                    Text("Notify")
+                                        .foregroundColor(.cyan)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 8)
+                                        .background(Color.black.opacity(0.8))
+                                        .cornerRadius(8)
+                                }
+                                .accessibilityLabel(Text("Send Test Notification"))
+                                
+                                Button(action: scheduleTenNotifications) {
+                                    Text("Notify x10")
+                                        .foregroundColor(.cyan)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 8)
+                                        .background(Color.black.opacity(0.8))
+                                        .cornerRadius(8)
+                                }
+                                .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
+                                
+                                Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
+                                    Text("Send a couple of  Scheduled Notifications")
+                                        .foregroundColor(.cyan)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 8)
+                                        .background(Color.black.opacity(0.8))
+                                        .cornerRadius(8)
+                                }
+                                .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
 
-								
-							}
+                                
+                            }
                         }
                         .toolbar {
                             ToolbarItem(placement: .navigationBarTrailing) {
@@ -277,42 +277,42 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            // Always reset splash on every app launch, including after being killed
+            showSplash = true
             setupNotifications()
-            showOnboarding = false
-            showProfileForm = false
-            // Defer onboarding/profile triggers until after splash
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // At launch, show splash for 3 seconds then fade out and decide next screen
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
                 withAnimation(.easeOut(duration: 0.5)) {
                     showSplash = false
                 }
-                // Decide what to present after splash
-                if !hasCompletedOnboarding {
-                    deferredOnboardingNeeded = true
-                } else if let first = profiles.first {
-                    activeProfile = first
+                // After splash fade out, determine if onboarding or profile view should show
+                if profiles.isEmpty {
+                    showOnboarding = true
+                    activeProfile = nil
                 } else {
-                    deferredOnboardingNeeded = true
+                    showOnboarding = false
+                    showProfileForm = false
+                    activeProfile = profiles.first
                 }
             }
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
             now = time
         }
-        .sheet(isPresented: $showOnboarding, onDismiss: {
+        .sheet(isPresented: .constant(shouldShowOnboarding), onDismiss: {
+            // After onboarding dismissed, if no active profile, show profile form
             if activeProfile == nil {
-                deferredProfileFormNeeded = true
+                showProfileForm = true
             }
         }) {
             OnboardingView { selection in
-                onboardingSelection = selection
                 hasCompletedOnboarding = true
+                onboardingSelection = selection
 
                 if selection == "iosUser" {
                     // Try to get device name as nickname with fallback
                     let deviceName = UIDevice.current.name.trimmingCharacters(in: .whitespacesAndNewlines)
-                    // Pre-fill nickname with device name or fallback
                     let defaultNickname = deviceName.isEmpty ? String(localized: "User") : deviceName
-                    // Create a temporary UserProfile with defaults and empty date/time, nil name/prename
                     let tempProfile = UserProfile(
                         nickname: defaultNickname,
                         name: nil,
@@ -322,31 +322,32 @@ struct ContentView: View {
                         gender: nil,
                         timeZoneIdentifier: TimeZone.current.identifier
                     )
-                    activeProfile = nil
-                    showOnboarding = false
-                    if showSplash {
-                        deferredProfileFormNeeded = true
+                    // Persist the newly created profile before dismissing onboarding and showing profile form
+                    modelContext.insert(tempProfile)
+                    do {
+                        try modelContext.save()
+                        activeProfile = tempProfile
+                        // Hide onboarding and show profile form for further edits
+                        showOnboarding = false
                         profileFormInitial = tempProfile
-                    } else {
                         showProfileForm = true
-                        profileFormInitial = tempProfile
+                    } catch {
+                        print("Failed to save profile after onboarding selection: \(error)")
                     }
                 } else if selection == "create" {
-                    // Present empty form for new profile creation
-                    activeProfile = nil
+                    // Dismiss onboarding and show empty profile form
                     showOnboarding = false
-                    if showSplash {
-                        deferredProfileFormNeeded = true
-                        profileFormInitial = nil
-                    } else {
-                        showProfileForm = true
-                        profileFormInitial = nil
-                    }
+                    profileFormInitial = nil
+                    showProfileForm = true
                 }
             }
         }
-        .sheet(isPresented: $showProfileForm, onDismiss: {
-            // If profile form dismissed but no active profile, maybe handle fallback if needed
+        .sheet(isPresented: .constant(shouldShowProfileForm), onDismiss: {
+            // If profile form dismissed but no active profile and no existing profiles, show onboarding again
+            if activeProfile == nil && profiles.isEmpty {
+                showOnboarding = true
+                showProfileForm = false
+            }
         }) {
             ProfileFormView(
                 initialProfile: profileFormInitial,
@@ -371,44 +372,36 @@ struct ContentView: View {
                         NotificationManager.shared.setupNotifications()
                         activeProfile = profile
                         showProfileForm = false
+                        // Hide onboarding and profile form after saving
+                        showOnboarding = false
+                        showProfileForm = false
                     } catch {
                         // Handle save error if needed
                         print("Failed to save profile: \(error)")
                     }
                 },
                 onCancel: {
-                    // Only show onboarding if there are truly no profiles and no active profile
                     if profiles.isEmpty && activeProfile == nil {
+                        // No profiles, show onboarding again
                         showOnboarding = true
                         showProfileForm = false
                     } else {
-                        // Dismiss form and keep the current user profile without showing onboarding
-                        // This prevents onboarding from being shown again after the first profile was created and saved,
-                        // and keeps the profile when canceling.
+                        // Profiles exist, hide onboarding and profile form
+                        showOnboarding = false
                         showProfileForm = false
                     }
                 }
             )
         }
-        .onChange(of: showSplash) { oldValue, newValue in
-            if !newValue {
-                if deferredOnboardingNeeded {
-                    showOnboarding = true
-                    deferredOnboardingNeeded = false
-                }
-                if deferredProfileFormNeeded {
-                    showProfileForm = true
-                    deferredProfileFormNeeded = false
-                }
-            }
-        }
     }
 
+    @State private var onboardingSelection: String? = nil
     @State private var profileFormInitial: UserProfile? = nil
 }
 
 // MARK: - Preview
 
 #Preview {
-	return ContentView()
+    return ContentView()
 }
+
