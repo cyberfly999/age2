@@ -166,12 +166,17 @@ struct ContentView: View {
                     // Main app view with greeting
                     NavigationView {
                         ZStack {
+							
 							LinearGradient(
 								gradient: Gradient(colors: [Color.blue, Color.purple]),
 								startPoint: .topLeading,
 								endPoint: .bottomTrailing
 							)
                             .ignoresSafeArea()
+							
+							// Fireworks background
+							Fireworks25View()
+								.ignoresSafeArea()
 
                             VStack(spacing: 20) {
                                 Text("Hello, \(profile.nickname)!")
