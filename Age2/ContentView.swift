@@ -37,6 +37,7 @@ struct ContentView: View {
     // Control flags for onboarding and profile form visibility
     @State private var showOnboarding = false
     @State private var showProfileForm = false
+    @State private var showSettingsSheet = false
 
     @State private var activeProfile: UserProfile? = nil
     
@@ -210,10 +211,10 @@ struct ContentView: View {
                                 
                                 Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
                                     Text("Send a couple of  Scheduled Notifications")
-                                        .foregroundColor(.cyan)
+                                        .foregroundColor(.white)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 8)
-                                        .background(Color.black.opacity(0.8))
+                                        .background(Color.blue.opacity(0.8))
                                         .cornerRadius(8)
                                 }
                                 .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
@@ -222,7 +223,17 @@ struct ContentView: View {
                             }
                         }
                         .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
+                            ToolbarItemGroup(placement: .bottomBar) {
+                                Button(action: {
+                                    showSettingsSheet = true
+                                }) {
+                                    Image(systemName: "gearshape")
+                                        .imageScale(.large)
+                                }
+                                .accessibilityLabel(Text("Settings"))
+
+                                Spacer()
+
                                 Button(action: {
                                     profileFormInitial = profile
                                     showProfileForm = true
@@ -371,6 +382,9 @@ struct ContentView: View {
                     }
                 }
             )
+        }
+        .sheet(isPresented: $showSettingsSheet) {
+            SettingsView()
         }
     }
 

@@ -17,8 +17,8 @@ struct SplashView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            VStack(spacing: 16) {
-                Image(systemName: "sparkles")
+            VStack(spacing: 32) {
+                Image(systemName: "gear")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
@@ -26,7 +26,7 @@ struct SplashView: View {
                     .rotationEffect(.degrees(rotation))
                     .onAppear {
                         withAnimation(Animation.linear(duration: rotationDuration).repeatForever(autoreverses: false)) {
-                            rotation = 360
+                            rotation = 120
                         }
                     }
                 Text("Welcome to your Era")
@@ -38,8 +38,6 @@ struct SplashView: View {
     }
 }
 
-#if DEBUG
 #Preview {
-    SplashView(rotationDuration: 1.5)
+	SplashView(rotationDuration: 1.0)
 }
-#endif
