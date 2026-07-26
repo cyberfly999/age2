@@ -168,7 +168,7 @@ struct ContentView: View {
                         ZStack {
 							
 							LinearGradient(
-								gradient: Gradient(colors: [Color.blue, Color.purple]),
+								gradient: Gradient(colors: [Color.black, Color.purple]),
 								startPoint: .topLeading,
 								endPoint: .bottomTrailing
 							)
@@ -234,7 +234,7 @@ struct ContentView: View {
                     // Show background while waiting for profile
                     ZStack {
 						LinearGradient(
-							gradient: Gradient(colors: [Color.blue, Color.purple]),
+							gradient: Gradient(colors: [Color.black, Color.purple]),
 							startPoint: .topLeading,
 							endPoint: .bottomTrailing
 						)

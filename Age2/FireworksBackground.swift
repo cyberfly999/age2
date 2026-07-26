@@ -58,7 +58,7 @@ class FireworksHostView: UIView {
 		let subcell1_1 = CAEmitterCell()
 		subcell1_1.contents = sparkImage
 		subcell1_1.name = "Trail"
-		subcell1_1.birthRate = 45.0
+		subcell1_1.birthRate = 500.0
 		subcell1_1.lifetime = 0.5
 		subcell1_1.beginTime = 0.01
 		subcell1_1.duration = 1.7
@@ -67,11 +67,11 @@ class FireworksHostView: UIView {
 		subcell1_1.xAcceleration = 100.0
 		subcell1_1.yAcceleration = 350.0
 		subcell1_1.emissionLongitude = -360.0 * (.pi / 180.0)
-		subcell1_1.emissionRange = 22.5 * (.pi / 180.0)
+		subcell1_1.emissionRange = 10 * (.pi / 180.0)
 		subcell1_1.scale = 0.5
 		subcell1_1.scaleSpeed = 0.13
 		subcell1_1.alphaSpeed = -0.7
-		subcell1_1.color = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0).cgColor
+		subcell1_1.color = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.5).cgColor
 		
 		let subcell1_2 = CAEmitterCell()
 		subcell1_2.contents = sparkImage
@@ -136,4 +136,8 @@ class FireworksHostView: UIView {
 		
 		return image.cgImage
 	}
+}
+
+#Preview {
+	return FireworksView()
 }

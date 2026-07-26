@@ -1,18 +1,18 @@
 //  SplashView.swift
 //  Age2
 //
-//  Created by refactor on 25.07.2026.
+//  Created by Vince Hehlen on 25.07.2026.
 //
 import SwiftUI
 
 struct SplashView: View {
     @State private var rotation: Double = 0
-    var rotationDuration: Double = 2.0 // Configurable speed in seconds per rotation
+    var rotationDuration: Double = 2.0 // seconds per rotation
     
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.blue, Color.purple]),
+                gradient: Gradient(colors: [Color.black, Color.purple]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -39,5 +39,5 @@ struct SplashView: View {
 }
 
 #Preview {
-	SplashView(rotationDuration: 1.0)
+	SplashView(rotationDuration: 2.0)
 }
