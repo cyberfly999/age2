@@ -31,6 +31,7 @@ private func requestNotificationAuthorizationIfNeeded() {
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
 
     @Query private var profiles: [UserProfile]
 
@@ -186,15 +187,17 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                 }
                                 
-                                Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
-                                    Text("Test Notifications")
-                                        .foregroundColor(.white)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 8)
-                                        .background(Color.blue.opacity(0.8))
-                                        .cornerRadius(8)
+                                if notificationsEnabled {
+                                    Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
+                                        Text("Test Notifications")
+                                            .foregroundColor(.white)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 8)
+                                            .background(Color.blue.opacity(0.8))
+                                            .cornerRadius(8)
+                                    }
+                                    .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
                                 }
-                                .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
                                 
                             }
                         }
