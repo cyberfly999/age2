@@ -2,7 +2,7 @@ import SwiftUI
 import UIKit
 
 // MARK: - Fireworks Background View
-struct Fireworks25View: UIViewRepresentable {
+struct FireworksView: UIViewRepresentable {
 	
 	func makeUIView(context: Context) -> UIView {
 		let host = FireworksHostView()

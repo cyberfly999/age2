@@ -175,7 +175,7 @@ struct ContentView: View {
                             .ignoresSafeArea()
 							
 							// Fireworks background
-							Fireworks25View()
+							FireworksView()
 								.ignoresSafeArea()
 
                             VStack(spacing: 20) {
