@@ -15,8 +15,15 @@ struct SettingsView: View {
                         }
                     }
             }
+            
+
         }
         .navigationTitle("Settings")
+		
+		Section(header: Text("Information")) {
+			let versionString = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
+			Text("Version: " + versionString)
+		}
     }
 }
 
