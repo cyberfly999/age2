@@ -186,26 +186,6 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                 }
                                 
-//                                Button(action: triggerTestNotification) {
-//                                    Text("Notify")
-//                                        .foregroundColor(.cyan)
-//                                        .padding(.horizontal, 8)
-//                                        .padding(.vertical, 8)
-//                                        .background(Color.black.opacity(0.8))
-//                                        .cornerRadius(8)
-//                                }
-//                                .accessibilityLabel(Text("Send Test Notification"))
-//                                
-//                                Button(action: scheduleTenNotifications) {
-//                                    Text("Notify x10")
-//                                        .foregroundColor(.cyan)
-//                                        .padding(.horizontal, 8)
-//                                        .padding(.vertical, 8)
-//                                        .background(Color.black.opacity(0.8))
-//                                        .cornerRadius(8)
-//                                }
-//                                .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
-                                
                                 Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
                                     Text("Test Notifications")
                                         .foregroundColor(.white)
@@ -215,7 +195,6 @@ struct ContentView: View {
                                         .cornerRadius(8)
                                 }
                                 .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
-
                                 
                             }
                         }
@@ -246,14 +225,11 @@ struct ContentView: View {
                 } else {
                     // Show background while waiting for profile
                     ZStack {
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.blue.opacity(0.45),
-                                Color.purple.opacity(0.55)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+						LinearGradient(
+							gradient: Gradient(colors: [Color.blue, Color.purple]),
+							startPoint: .topLeading,
+							endPoint: .bottomTrailing
+						)
                         .ignoresSafeArea()
                     }
                 }
