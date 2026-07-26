@@ -165,14 +165,11 @@ struct ContentView: View {
                     // Main app view with greeting
                     NavigationView {
                         ZStack {
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color.blue.opacity(0.45),
-                                    Color.purple.opacity(0.55)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
+							LinearGradient(
+								gradient: Gradient(colors: [Color.blue, Color.purple]),
+								startPoint: .topLeading,
+								endPoint: .bottomTrailing
+							)
                             .ignoresSafeArea()
 
                             VStack(spacing: 20) {
@@ -189,28 +186,28 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                 }
                                 
-                                Button(action: triggerTestNotification) {
-                                    Text("Notify")
-                                        .foregroundColor(.cyan)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 8)
-                                        .background(Color.black.opacity(0.8))
-                                        .cornerRadius(8)
-                                }
-                                .accessibilityLabel(Text("Send Test Notification"))
-                                
-                                Button(action: scheduleTenNotifications) {
-                                    Text("Notify x10")
-                                        .foregroundColor(.cyan)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 8)
-                                        .background(Color.black.opacity(0.8))
-                                        .cornerRadius(8)
-                                }
-                                .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
+//                                Button(action: triggerTestNotification) {
+//                                    Text("Notify")
+//                                        .foregroundColor(.cyan)
+//                                        .padding(.horizontal, 8)
+//                                        .padding(.vertical, 8)
+//                                        .background(Color.black.opacity(0.8))
+//                                        .cornerRadius(8)
+//                                }
+//                                .accessibilityLabel(Text("Send Test Notification"))
+//                                
+//                                Button(action: scheduleTenNotifications) {
+//                                    Text("Notify x10")
+//                                        .foregroundColor(.cyan)
+//                                        .padding(.horizontal, 8)
+//                                        .padding(.vertical, 8)
+//                                        .background(Color.black.opacity(0.8))
+//                                        .cornerRadius(8)
+//                                }
+//                                .accessibilityLabel(Text("Send 10 Scheduled Notifications"))
                                 
                                 Button(action: { scheduleMultipleNotifications(number: 5, interval: 10) }) {
-                                    Text("Send a couple of  Scheduled Notifications")
+                                    Text("Test Notifications")
                                         .foregroundColor(.white)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 8)
