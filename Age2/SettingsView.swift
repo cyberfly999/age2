@@ -8,7 +8,7 @@ struct SettingsView: View {
         Form {
             Section(header: Text("Notifications")) {
                 Toggle("Enable Notifications", isOn: $notificationsEnabled)
-                    .onChange(of: notificationsEnabled) { newValue in
+                    .onChange(of: notificationsEnabled) { _, newValue in
                         withAnimation {
                             showNotificationOptions = newValue
                         }
