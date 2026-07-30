@@ -18,7 +18,7 @@ struct SplashView: View {
             )
             .ignoresSafeArea()
             VStack(spacing: 32) {
-                Image(systemName: "gear")
+                Image(systemName: "clock")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
@@ -26,12 +26,13 @@ struct SplashView: View {
                     .rotationEffect(.degrees(rotation))
                     .onAppear {
                         withAnimation(Animation.linear(duration: rotationDuration).repeatForever(autoreverses: false)) {
-                            rotation = 120
+                            rotation = 360
                         }
                     }
-                Text("Welcome to your Era")
+                Text("Welcome to\n your Era")
                     .font(.largeTitle).bold()
                     .foregroundColor(.white)
+				
             }
         }
         .transition(.opacity)
