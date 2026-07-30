@@ -3,9 +3,11 @@ import UIKit
 
 // MARK: - Fireworks Background View
 struct FireworksView: UIViewRepresentable {
+	let rounds: Int
+	init(rounds: Int = 0) { self.rounds = rounds }
 	
 	func makeUIView(context: Context) -> UIView {
-		let host = FireworksHostView()
+		let host = FireworksHostView(rounds: rounds)
 		host.backgroundColor = .clear
 		return host
 	}
@@ -19,13 +21,18 @@ struct FireworksView: UIViewRepresentable {
 class FireworksHostView: UIView {
 	
 	private var particlesLayer: CAEmitterLayer?
+	private let rounds: Int
+	private var launches = 0
+	private var launchTimer: Timer?
 	
-	override init(frame: CGRect) {
-		super.init(frame: frame)
+	init(rounds: Int) {
+		self.rounds = rounds
+		super.init(frame: .zero)
 		setupEmitter()
 	}
 	
 	required init?(coder: NSCoder) {
+		self.rounds = 0
 		super.init(coder: coder)
 		setupEmitter()
 	}
@@ -42,7 +49,11 @@ class FireworksHostView: UIView {
 		
 		let cell1 = CAEmitterCell()
 		cell1.name = "Parent"
-		cell1.birthRate = 5.0
+		if rounds == 0 {
+			cell1.birthRate = 5.0
+		} else {
+			cell1.birthRate = 0.0
+		}
 		cell1.lifetime = 2.5
 		cell1.velocity = 300.0
 		cell1.velocityRange = 100.0
@@ -94,6 +105,27 @@ class FireworksHostView: UIView {
 		
 		layer.addSublayer(emitterLayer)
 		self.particlesLayer = emitterLayer
+		
+		if rounds > 0 {
+			launchTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] timer in
+				guard let self = self else {
+					timer.invalidate()
+					return
+				}
+				if let particlesLayer = self.particlesLayer, self.launches < self.rounds {
+					particlesLayer.setValue(1.0, forKeyPath: "emitterCells.Parent.birthRate")
+					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+						particlesLayer.setValue(0.0, forKeyPath: "emitterCells.Parent.birthRate")
+					}
+					self.launches += 1
+					if self.launches >= self.rounds {
+						timer.invalidate()
+					}
+				} else {
+					timer.invalidate()
+				}
+			}
+		}
 	}
 	
 	override func layoutSubviews() {
@@ -106,6 +138,11 @@ class FireworksHostView: UIView {
 		particlesLayer?.emitterPosition = CGPoint(x: bounds.width / 2, y: bounds.height - 50)
 		particlesLayer?.emitterSize = CGSize(width: 0.0, height: 0.0)
 		CATransaction.commit()
+	}
+	
+	override func removeFromSuperview() {
+		launchTimer?.invalidate()
+		super.removeFromSuperview()
 	}
 	
 	private func createSparkImage() -> CGImage? {
@@ -139,5 +176,8 @@ class FireworksHostView: UIView {
 }
 
 #Preview {
-	return FireworksView()
+	VStack {
+		Text("Six Fireworks")
+		FireworksView()
+	}
 }
