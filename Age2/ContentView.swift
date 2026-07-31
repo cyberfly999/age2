@@ -47,7 +47,21 @@ struct ContentView: View {
     @State private var showSplash = true
 	private let showSplashFor: TimeInterval = 3
 
+    @State private var hasCheckedProfiles = false
+
     private var hasProfile: Bool { profiles.first != nil }
+    
+    private func handleInitialScreen() {
+        if profiles.isEmpty {
+            showOnboarding = true
+            activeProfile = nil
+        } else {
+            showOnboarding = false
+            showProfileForm = false
+            activeProfile = profiles.first
+        }
+        hasCheckedProfiles = true
+    }
 
     // Computed property to calculate lifetime in seconds formatted string, using current 'now' date for live update
     private var lifetimeInSecondsText: String {
@@ -157,8 +171,8 @@ struct ContentView: View {
 
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
-        let shouldShowOnboarding = showOnboarding && !hasProfile && !showSplash
-        let shouldShowProfileForm = showProfileForm && !hasProfile && !showSplash && !showOnboarding
+        let shouldShowOnboarding = hasCheckedProfiles && showOnboarding && !hasProfile && !showSplash
+        let shouldShowProfileForm = hasCheckedProfiles && showProfileForm && !hasProfile && !showSplash && !showOnboarding
         
         ZStack {
             Group {
@@ -178,6 +192,7 @@ struct ContentView: View {
 							FireworksView()
 								.ignoresSafeArea()
 
+							// main view
                             VStack(spacing: 20) {
                                 Text("Hello, \(profile.nickname)!")
                                     .font(.largeTitle)
@@ -256,16 +271,11 @@ struct ContentView: View {
                 withAnimation(.easeOut(duration: 0.5)) {
                     showSplash = false
                 }
-                // After splash fade out, determine if onboarding or profile view should show
-                if profiles.isEmpty {
-                    showOnboarding = true
-                    activeProfile = nil
-                } else {
-                    showOnboarding = false
-                    showProfileForm = false
-                    activeProfile = profiles.first
-                }
+                handleInitialScreen()
             }
+        }
+        .onChange(of: profiles) { _, _ in
+            handleInitialScreen()
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
             now = time
@@ -378,4 +388,3 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
-
