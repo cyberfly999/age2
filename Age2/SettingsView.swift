@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
+    @AppStorage("showZodiac") private var showZodiac: Bool = true
     @State private var showNotificationOptions = false
     
     var body: some View {
@@ -29,6 +30,10 @@ struct SettingsView: View {
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
+            }
+            
+            Section(header: Text("Zodiac")) {
+                Toggle("Show Zodiac", isOn: $showZodiac)
             }
             
             Section(header: Text("Information")) {

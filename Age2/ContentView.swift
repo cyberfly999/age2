@@ -32,6 +32,7 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
+    @AppStorage("showZodiac") private var showZodiac: Bool = true
 
     @Query private var profiles: [UserProfile]
 
@@ -202,7 +203,7 @@ struct ContentView: View {
                                 Text(lifetimeInSecondsText)
                                     .foregroundColor(.white)
                                 // add zodiac here
-                                if !zodiacSignText.isEmpty {
+                                if showZodiac && !zodiacSignText.isEmpty {
                                     Text(zodiacSignText)
                                         .foregroundColor(.white)
                                 }
