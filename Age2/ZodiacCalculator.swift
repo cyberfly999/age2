@@ -7,6 +7,13 @@
 import Foundation
 import SwiftUI
 
+/// Controls the output format for zodiac results.
+enum ZodiacOutputStyle {
+    case name
+    case symbol
+    case both
+}
+
 /// A lightweight, non‑throwing zodiac calculator.
 ///
 /// - If the date string can’t be parsed, `zodiacSign` will be `nil`.
@@ -45,12 +52,10 @@ final class ZodiacCalculator {
 	
 	// MARK: - Public API
 	
-	/// The Western zodiac sign for the stored birth date, or `nil` if the input was invalid.
-	var zodiacSign: String? {
+	/// Returns the Western zodiac for the birth date in the requested output style, or `nil` if input was invalid.
+	func zodiac(style: ZodiacOutputStyle = .both) -> String? {
 		guard let date = birthDate else { return nil }
 		
-		// All signs are defined by month/day ranges.  We build a date
-		// for the *same* year as `date` and compare.
 		let calendar = Calendar.current
 		let birthYear  = calendar.component(.year, from: date)
 		
@@ -62,45 +67,50 @@ final class ZodiacCalculator {
 			return calendar.date(from: comps)!
 		}
 		
-		// Sign definitions – inclusive ranges.
-		let signs: [(name: String, startMonth: Int, startDay: Int,
+		let signs: [(name: String, symbol: String, startMonth: Int, startDay: Int,
 					 endMonth: Int,   endDay: Int)] = [
-			("Capricorn ♑︎", 12, 22, 1, 19),
-			("Aquarius ♒︎",  1, 20, 2, 18),
-			("Pisces ♓︎",    2, 19, 3, 20),
-			("Aries ♈︎",     3, 21, 4, 19),
-			("Taurus ♉︎",    4, 20, 5, 20),
-			("Gemini ♊︎",    5, 21, 6, 20),
-			("Cancer ♋︎",    6, 21, 7, 22),
-			("Leo ♌︎",       7, 23, 8, 22),
-			("Virgo ♍︎",     8, 23, 9, 22),
-			("Libra ♎︎",     9, 23,10, 22),
-			("Scorpio ♏︎",  10, 23,11, 21),
-			("Sagittarius ♐︎",11,22,12,21)
+			("Capricorn",   "♑︎", 12, 22, 1, 19),
+			("Aquarius",    "♒︎",  1, 20, 2, 18),
+			("Pisces",      "♓︎",  2, 19, 3, 20),
+			("Aries",       "♈︎",  3, 21, 4, 19),
+			("Taurus",      "♉︎",  4, 20, 5, 20),
+			("Gemini",      "♊︎",  5, 21, 6, 20),
+			("Cancer",      "♋︎",  6, 21, 7, 22),
+			("Leo",         "♌︎",  7, 23, 8, 22),
+			("Virgo",       "♍︎",  8, 23, 9, 22),
+			("Libra",       "♎︎",  9, 23,10, 22),
+			("Scorpio",     "♏︎", 10, 23,11, 21),
+			("Sagittarius", "♐︎", 11,22,12,21)
 		]
 		
 		for sign in signs {
 			let start = makeDate(month: sign.startMonth, day: sign.startDay)
-			
-			// Capricorn wraps around the year end.
 			let end: Date
 			if sign.startMonth > sign.endMonth {
-				// e.g. 12/22 – 1/19
 				end = makeDate(month: sign.endMonth, day: sign.endDay)
 			} else {
 				end = makeDate(month: sign.endMonth, day: sign.endDay)
 			}
 			
 			if sign.startMonth > sign.endMonth {
-				// Wrapped range – two intervals.
-				if date >= start || date <= end { return sign.name }
+				if date >= start || date <= end {
+					switch style {
+					case .name: return sign.name
+					case .symbol: return sign.symbol
+					case .both: return "\(sign.name) \(sign.symbol)"
+					}
+				}
 			} else {
-				// Normal range.
-				if date >= start && date <= end { return sign.name }
+				if date >= start && date <= end {
+					switch style {
+					case .name: return sign.name
+					case .symbol: return sign.symbol
+					case .both: return "\(sign.name) \(sign.symbol)"
+					}
+				}
 			}
 		}
 		
-		// Should never happen – all dates belong to a sign.
 		return nil
 	}
 }

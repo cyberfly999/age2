@@ -106,7 +106,7 @@ struct ContentView: View {
         let formattedDateTime = formatter.string(from: combinedDate)
         
         let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
-        let zodiac = zodiacCalculator.zodiacSign ?? ""
+		let zodiac = zodiacCalculator.zodiac(style: .both) ?? ""
         
         if zodiac.isEmpty {
             return ""
@@ -389,3 +389,4 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
+
