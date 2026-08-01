@@ -29,9 +29,10 @@ struct SplashView: View {
                             rotation = 360
                         }
                     }
-                Text("Welcome to\n your Era")
+                Text("Welcome\n to your Era")
                     .font(.largeTitle).bold()
                     .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
 				
             }
         }
@@ -42,3 +43,4 @@ struct SplashView: View {
 #Preview {
 	SplashView(rotationDuration: 2.0)
 }
+
