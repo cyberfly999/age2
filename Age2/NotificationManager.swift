@@ -37,6 +37,56 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 		// Show notifications while app is in the foreground
 		completionHandler([.banner, .sound])
 	}
+
+	/// Schedules a local notification that will be delivered even if the app is in the background, inactive, or closed—provided notification permissions are granted by the user.
+	func triggerTestNotification() {
+		let content = UNMutableNotificationContent()
+		content.title = "Test Notification"
+		content.body = "This is a test local notification."
+		content.sound = .default
+
+		let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+		let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+		UNUserNotificationCenter.current().add(request) { error in
+			if let error = error {
+				print("Failed to schedule notification: \(error)")
+			}
+		}
+	}
+
+	/// Schedules 10 notifications, each 100 seconds apart, starting from now.
+	func scheduleTenNotifications() {
+		for i in 1...10 {
+			let content = UNMutableNotificationContent()
+			content.title = "Scheduled Notification #\(i)"
+			content.body = "This is notification #\(i) of 10."
+			content.sound = .default
+			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(100 * i), repeats: false)
+			let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+			UNUserNotificationCenter.current().add(request) { error in
+				if let error = error {
+					print("Failed to schedule notification #\(i): \(error)")
+				}
+			}
+		}
+	}
+
+	/// Schedules notifications from now
+	func scheduleMultipleNotifications(number: Int, interval: Int) {
+		for i in 1...number {
+			let content = UNMutableNotificationContent()
+			content.title = "Scheduled Notificationgedonner #\(i)"
+			content.body = "This is notification #\(i) of \(number)."
+			content.sound = .default
+			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(interval * i), repeats: false)
+			let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+			UNUserNotificationCenter.current().add(request) { error in
+				if let error = error {
+					print("Failed to schedule notification #\(i): \(error)")
+				}
+			}
+		}
+	}
 }
 
 // MARK: - UIApplicationDelegate methods for remote notifications
