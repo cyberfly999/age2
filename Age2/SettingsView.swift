@@ -6,6 +6,8 @@ struct NotificationInterval: Identifiable, Hashable {
     let id = UUID()
     var value: Int
     var unit: String
+    var name: String = ""
+    var body: String = ""
     
     var usesCustomValue: Bool {
         value != 10 && value != 100 && value != 1000 && value != 10000 && value != 100000
@@ -19,46 +21,54 @@ struct NotificationIntervalRow: View {
     var onDelete: (() -> Void)? = nil
 
     var body: some View {
-        HStack {
-            Text("Every")
-            Picker("Amount", selection: $interval.value) {
-                ForEach(presetAmounts, id: \.self) { amt in
-                    Text("\(amt)").tag(amt)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Every")
+                Picker("", selection: $interval.value) {
+                    ForEach(presetAmounts, id: \.self) { amt in
+                        Text("\(amt)").tag(amt)
+                    }
+                    Text("Other").tag(-1)
                 }
-                Text("Other").tag(-1)
-            }
-            .frame(width: 80)
-            .pickerStyle(.menu)
-            .onChange(of: interval.value) { _, newValue in
-                if newValue != -1 && !presetAmounts.contains(newValue) {
-                    interval.value = presetAmounts[0]
+                .frame(width: 80)
+                .pickerStyle(.menu)
+                .onChange(of: interval.value) { _, newValue in
+                    if newValue != -1 && !presetAmounts.contains(newValue) {
+                        interval.value = presetAmounts[0]
+                    }
                 }
-            }
 
-            if interval.value == -1 {
-                TextField("Other", value: $interval.value, formatter: NumberFormatter())
-                    .keyboardType(.numberPad)
-                    .frame(width: 70)
-            }
-
-            Picker("Unit", selection: $interval.unit) {
-                ForEach(notificationUnits, id: \.self) { unit in
-                    Text(unit)
+                if interval.value == -1 {
+                    TextField("Other", value: $interval.value, formatter: NumberFormatter())
+                        .keyboardType(.numberPad)
+                        .frame(width: 70)
                 }
-            }
-            .pickerStyle(.menu)
-            // Spacer()
-			
-			
-			// optional delete button, let it commented
-//            if let onDelete = onDelete {
-//                Button(role: .destructive) {
-//                    onDelete()
-//                } label: {
-//                    Image(systemName: "trash")
+
+                Picker("", selection: $interval.unit) {
+                    ForEach(notificationUnits, id: \.self) { unit in
+                        Text(unit)
+                    }
+                }
+                .pickerStyle(.menu)
+                // Spacer()
+                
+                
+                // optional delete button, let it commented
+//                if let onDelete = onDelete {
+//                    Button(role: .destructive) {
+//                        onDelete()
+//                    } label: {
+//                        Image(systemName: "trash")
+//                    }
+//                    .buttonStyle(.borderless)
 //                }
-//                .buttonStyle(.borderless)
-//            }
+            }
+            
+            TextField("Title", text: $interval.name)
+                .textFieldStyle(.roundedBorder)
+                .padding(.top, 4)
+            TextField("Topic", text: $interval.body)
+                .textFieldStyle(.roundedBorder)
         }
     }
 }
@@ -104,7 +114,9 @@ struct SettingsView: View {
                             notificationIntervals.remove(atOffsets: indexSet)
                         }
                         Button(action: {
-                            notificationIntervals.append(NotificationInterval(value: presetAmounts[0], unit: notificationUnits[0]))
+                            withAnimation {
+                                notificationIntervals.append(NotificationInterval(value: presetAmounts[0], unit: notificationUnits[0]))
+                            }
                         }) {
                             Image(systemName: "plus")
                         }
