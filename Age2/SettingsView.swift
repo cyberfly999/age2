@@ -47,15 +47,18 @@ struct NotificationIntervalRow: View {
                 }
             }
             .pickerStyle(.menu)
-            Spacer()
-            if let onDelete = onDelete {
-                Button(role: .destructive) {
-                    onDelete()
-                } label: {
-                    Image(systemName: "trash")
-                }
-                .buttonStyle(.borderless)
-            }
+            // Spacer()
+			
+			
+			// optional delete button, let it commented
+//            if let onDelete = onDelete {
+//                Button(role: .destructive) {
+//                    onDelete()
+//                } label: {
+//                    Image(systemName: "trash")
+//                }
+//                .buttonStyle(.borderless)
+//            }
         }
     }
 }
@@ -87,15 +90,18 @@ struct SettingsView: View {
                 
                 if showNotificationOptions {
                     Section(header: Text("Notification Intervals")) {
-                        ForEach($notificationIntervals) { $interval in
+                        ForEach(Array(notificationIntervals.enumerated()), id: \.element.id) { index, _ in
                             NotificationIntervalRow(
-                                interval: $interval,
+                                interval: $notificationIntervals[index],
                                 notificationUnits: notificationUnits,
                                 presetAmounts: presetAmounts,
                                 onDelete: {
-                                    notificationIntervals.removeAll { $0.id == interval.id }
+                                    notificationIntervals.remove(at: index)
                                 }
                             )
+                        }
+                        .onDelete { indexSet in
+                            notificationIntervals.remove(atOffsets: indexSet)
                         }
                         Button(action: {
                             notificationIntervals.append(NotificationInterval(value: presetAmounts[0], unit: notificationUnits[0]))
