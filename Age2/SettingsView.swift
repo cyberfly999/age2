@@ -82,6 +82,10 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
+			Section(header: Text("Zodiac")) {
+				Toggle("Show Zodiac", isOn: $showZodiac)
+			}
+			
             Section(header: Text("Notifications")) {
                 Toggle("Enable Notifications", isOn: $notificationsEnabled)
                     .onChange(of: notificationsEnabled) { _, newValue in
@@ -125,10 +129,6 @@ struct SettingsView: View {
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
                 }
-            }
-            
-            Section(header: Text("Zodiac")) {
-                Toggle("Show Zodiac", isOn: $showZodiac)
             }
             
             Section(header: Text("Information")) {
