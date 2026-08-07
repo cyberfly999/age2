@@ -6,8 +6,8 @@ struct NotificationInterval: Identifiable, Hashable {
     let id = UUID()
     var value: Int
     var unit: String
-    var name: String = ""
-    var body: String = ""
+    var name: String = "My New Birthday"
+    var body: String = "Tralala"
     
     var usesCustomValue: Bool {
         value != 10 && value != 100 && value != 1000 && value != 10000 && value != 100000
@@ -30,7 +30,7 @@ struct NotificationIntervalRow: View {
                     }
                     Text("Other").tag(-1)
                 }
-                .frame(width: 80)
+                .frame(width: 120)
                 .pickerStyle(.menu)
                 .onChange(of: interval.value) { _, newValue in
                     if newValue != -1 && !presetAmounts.contains(newValue) {
