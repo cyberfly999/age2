@@ -109,7 +109,7 @@ struct ContentView: View {
 		let zodiac = zodiacCalculator.zodiac(style: .both) ?? ""
         
         if zodiac.isEmpty {
-            return "You seem to have no zodiac ..."
+            return "You seem to not have any zodiac ..."
         } else {
             return String(localized: "Your Zodiac is \(zodiac)")
         }
