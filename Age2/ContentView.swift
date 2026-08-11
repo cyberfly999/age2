@@ -77,44 +77,6 @@ struct ContentView: View {
         return String(localized: "Your era spans \(formatted) seconds")
     }
     
-    private var zodiacSignText: String {
-        guard let profile = activeProfile else { return "" }
-        let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
-        
-        // Combine dateOfBirth and timeOfBirth into one Date in the profile's timeZone
-        var calendar = Calendar.current
-        calendar.timeZone = timeZone
-        
-        let birthDateComponents = calendar.dateComponents([.year, .month, .day], from: profile.dateOfBirth)
-        let birthTimeComponents = calendar.dateComponents([.hour, .minute, .second], from: profile.timeOfBirth)
-        
-        var combinedComponents = DateComponents()
-        combinedComponents.year = birthDateComponents.year
-        combinedComponents.month = birthDateComponents.month
-        combinedComponents.day = birthDateComponents.day
-        combinedComponents.hour = birthTimeComponents.hour
-        combinedComponents.minute = birthTimeComponents.minute
-        combinedComponents.second = birthTimeComponents.second
-        
-        guard let combinedDate = calendar.date(from: combinedComponents) else {
-            return ""
-        }
-        
-        let formatter = DateFormatter()
-        formatter.timeZone = timeZone
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        let formattedDateTime = formatter.string(from: combinedDate)
-        
-        let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
-		let zodiac = zodiacCalculator.zodiac(style: .both) ?? ""
-        
-        if zodiac.isEmpty {
-            return "You seem to not have any zodiac ..."
-        } else {
-            return String(localized: "Your Zodiac is \(zodiac)")
-        }
-    }
-    
     /// Requests notification permission if not already granted.
     private func setupNotifications() {
         requestNotificationAuthorizationIfNeeded()
@@ -152,9 +114,9 @@ struct ContentView: View {
                                 
                                 Text(lifetimeInSecondsText)
                                     .foregroundColor(.white)
-                                // add zodiac here
-                                if showZodiac && !zodiacSignText.isEmpty {
-                                    Text(zodiacSignText)
+                                // add zodiac here xx
+                                if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
+                                    Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
                                         .foregroundColor(.white)
                                 }
                                 
@@ -339,4 +301,3 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
-

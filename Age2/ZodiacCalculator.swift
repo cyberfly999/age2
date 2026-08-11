@@ -113,4 +113,40 @@ final class ZodiacCalculator {
 		
 		return nil
 	}
+	
+	/// Computes a user-facing zodiac sign string for a given profile, returning
+	/// a localized string such as "Your Zodiac is Leo ♌︎" (or an error).
+	/// - Parameters:
+	///   - profile: The user profile containing DOB, TOB, and timeZone.
+	///   - style: The ZodiacOutputStyle to use for the sign string.
+	/// - Returns: A localized string summarizing the zodiac sign, or an error message.
+	static func zodiacSignText(for profile: UserProfile?, style: ZodiacOutputStyle = .both) -> String {
+		guard let profile = profile else { return "" }
+		let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
+		var calendar = Calendar.current
+		calendar.timeZone = timeZone
+		let birthDateComponents = calendar.dateComponents([.year, .month, .day], from: profile.dateOfBirth)
+		let birthTimeComponents = calendar.dateComponents([.hour, .minute, .second], from: profile.timeOfBirth)
+		var combinedComponents = DateComponents()
+		combinedComponents.year = birthDateComponents.year
+		combinedComponents.month = birthDateComponents.month
+		combinedComponents.day = birthDateComponents.day
+		combinedComponents.hour = birthTimeComponents.hour
+		combinedComponents.minute = birthTimeComponents.minute
+		combinedComponents.second = birthTimeComponents.second
+		guard let combinedDate = calendar.date(from: combinedComponents) else {
+			return ""
+		}
+		let formatter = DateFormatter()
+		formatter.timeZone = timeZone
+		formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+		let formattedDateTime = formatter.string(from: combinedDate)
+		let zodiacCalculator = ZodiacCalculator(birthDateString: formattedDateTime, timeZoneIdentifier: profile.timeZoneIdentifier)
+		let zodiac = zodiacCalculator.zodiac(style: style) ?? ""
+		if zodiac.isEmpty {
+			return "You seem to not have any zodiac ..."
+		} else {
+			return String(localized: "Your Zodiac is \(zodiac)")
+		}
+	}
 }
