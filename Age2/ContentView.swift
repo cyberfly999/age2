@@ -114,7 +114,7 @@ struct ContentView: View {
                                 
                                 Text(lifetimeInSecondsText)
                                     .foregroundColor(.white)
-                                // add zodiac here xx
+                                // add zodiac here
                                 if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                     Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
                                         .foregroundColor(.white)
