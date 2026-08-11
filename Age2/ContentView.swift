@@ -142,6 +142,7 @@ struct ContentView: View {
 									} label: {
 										Image(systemName: "gearshape")
 											.imageScale(.large)
+											.foregroundColor(.white)
 									}
 									.accessibilityLabel("Settings")
 									.buttonStyle(.plain)
@@ -154,6 +155,7 @@ struct ContentView: View {
 									} label: {
 										Image(systemName: "person")
 											.imageScale(.large)
+											.foregroundColor(.white)
 									}
 									.accessibilityLabel("Edit Profile")
 									.buttonStyle(.plain)
@@ -307,3 +309,4 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
+
