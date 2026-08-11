@@ -145,7 +145,6 @@ struct ContentView: View {
 											.foregroundColor(.white)
 									}
 									.accessibilityLabel("Settings")
-									.buttonStyle(.plain)
 
 									Spacer()
 
@@ -158,7 +157,6 @@ struct ContentView: View {
 											.foregroundColor(.white)
 									}
 									.accessibilityLabel("Edit Profile")
-									.buttonStyle(.plain)
 								}
 								.frame(maxWidth: .infinity)
 							}
