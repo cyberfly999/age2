@@ -134,29 +134,35 @@ struct ContentView: View {
                                 
                             }
                         }
-                        .toolbar {
-                            ToolbarItemGroup(placement: .bottomBar) {
-                                Button(action: {
-                                    showSettingsSheet = true
-                                }) {
-                                    Image(systemName: "gearshape")
-                                        .imageScale(.large)
-                                }
-                                .accessibilityLabel(Text("Settings"))
+						.toolbar {
+							ToolbarItem(placement: .bottomBar) {
+								HStack {
+									Button {
+										showSettingsSheet = true
+									} label: {
+										Image(systemName: "gearshape")
+											.imageScale(.large)
+									}
+									.accessibilityLabel("Settings")
+									.buttonStyle(.plain)
 
-                                Spacer()
+									Spacer()
 
-                                Button(action: {
-                                    profileFormInitial = profile
-                                    showProfileForm = true
-                                }) {
-                                    Image(systemName: "person.crop.circle")
-                                        .imageScale(.large)
-                                }
-                                .accessibilityLabel(Text("Edit Profile"))
-                            }
-                        }
-                        .navigationBarTitleDisplayMode(.inline)
+									Button {
+										profileFormInitial = profile
+										showProfileForm = true
+									} label: {
+										Image(systemName: "person")
+											.imageScale(.large)
+									}
+									.accessibilityLabel("Edit Profile")
+									.buttonStyle(.plain)
+								}
+								.frame(maxWidth: .infinity)
+							}
+							.sharedBackgroundVisibility(.hidden)
+						}
+						.navigationBarTitleDisplayMode(.inline)
                     }
                 } else {
                     // Show background while waiting for profile
