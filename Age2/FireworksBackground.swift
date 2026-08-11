@@ -177,7 +177,6 @@ class FireworksHostView: UIView {
 
 #Preview {
 	VStack {
-		Text("Six Fireworks")
 		FireworksView()
 	}
 }
