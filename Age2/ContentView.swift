@@ -26,6 +26,35 @@ private func requestNotificationAuthorizationIfNeeded() {
     }
 }
 
+struct AnimatedDigitView: View {
+    @State private var displayedDigit: Int = 0
+    @State private var rotation: Double = 0
+    var digit: Int
+    var body: some View {
+        Text("\(displayedDigit)")
+            .font(.title.bold())
+            .foregroundColor(.white)
+            .frame(width: 28)
+            .rotation3DEffect(
+                .degrees(rotation),
+                axis: (x: 1, y: 0, z: 0)
+            )
+            .onChange(of: digit) { _, newValue in
+                if newValue != displayedDigit {
+					withAnimation(.spring(response: 1.0, dampingFraction: 0.6)) {
+                        rotation += 360
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) {
+                        displayedDigit = newValue
+                    }
+                }
+            }
+            .onAppear {
+                displayedDigit = digit
+            }
+    }
+}
+
 // MARK: - ContentView
 
 struct ContentView: View {
@@ -64,17 +93,36 @@ struct ContentView: View {
         hasCheckedProfiles = true
     }
 
-    // Computed property to calculate lifetime in seconds formatted string, using current 'now' date for live update
-    private var lifetimeInSecondsText: String {
-        guard let profile = activeProfile else { return "" }
+    private var lifetimeInSecondsParts: (prefix: String, lastDigit: Int, formatted: String) {
+        guard let profile = activeProfile else { return ("", 0, "") }
         let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
         let runningAge = RunningAge(birthdate: profile.dateOfBirth, birthtime: profile.timeOfBirth, timeZone: timeZone)
-        let seconds = runningAge.calculateLifetimeInSeconds(currentDate: now)
+        let seconds = Int(runningAge.calculateLifetimeInSeconds(currentDate: now))
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.maximumFractionDigits = 0
-        let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(Int(seconds))"
-        return String(localized: "Your era spans \(formatted) seconds")
+        let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(seconds)"
+        // Remove separators to get the last digit correctly
+        let compact = formatted.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ".", with: "")
+        guard let last = compact.last, let digit = Int(String(last)) else { return (formatted, 0, formatted) }
+        let prefixCount = compact.count - 1
+        // Find the range of prefix in formatted (with separators)
+        var prefix = formatted
+        if prefixCount > 0 {
+            // Remove last digit in compact form from formatted.
+            // Find the last digit in formatted by walking from the end.
+            var removed = 0
+            var idx = formatted.endIndex
+            while idx > formatted.startIndex && removed < 1 {
+                idx = formatted.index(before: idx)
+                let char = formatted[idx]
+                if char.isWholeNumber { removed += 1 }
+            }
+            prefix = String(formatted[..<idx])
+        } else {
+            prefix = ""
+        }
+        return (prefix, digit, formatted)
     }
     
     /// Requests notification permission if not already granted.
@@ -112,8 +160,16 @@ struct ContentView: View {
                                     .foregroundColor(.white)
                                     .shadow(radius: 5)
                                 
-                                Text(lifetimeInSecondsText)
-                                    .foregroundColor(.white)
+                                HStack(spacing: 0) {
+                                    Text(lifetimeInSecondsParts.prefix)
+                                        .foregroundColor(.white)
+										.font(Font.title.bold())
+									
+                                    AnimatedDigitView(digit: lifetimeInSecondsParts.lastDigit)
+                                    Text(" seconds")
+                                        .foregroundColor(.white)
+                                        .font(Font.title.bold())
+                                }
                                 // add zodiac here
                                 if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                     Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
