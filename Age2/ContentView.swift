@@ -32,7 +32,7 @@ struct AnimatedDigitView: View {
     var digit: Int
     var body: some View {
         Text("\(displayedDigit)")
-            .font(.title.bold())
+            .font(.largeTitle.bold())
             .foregroundColor(.white)
             .frame(width: 28)
             .rotation3DEffect(
@@ -41,7 +41,7 @@ struct AnimatedDigitView: View {
             )
             .onChange(of: digit) { _, newValue in
                 if newValue != displayedDigit {
-					withAnimation(.spring(response: 1.0, dampingFraction: 0.6)) {
+                    withAnimation(.spring(response: 1.0, dampingFraction: 0.6)) {
                         rotation += 360
                     }
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) {
@@ -75,11 +75,26 @@ struct ContentView: View {
     @State private var now = Date()
     
     @State private var showSplash = true
-	private let showSplashFor: TimeInterval = 3
+    private let showSplashFor: TimeInterval = 3
 
     @State private var hasCheckedProfiles = false
 
     private var hasProfile: Bool { profiles.first != nil }
+    
+    // MARK: - New per instructions
+    
+    @State private var previousDigits: [Int] = []
+    
+    private var lifetimeDigits: [Int] {
+        guard let profile = activeProfile else { return [] }
+        let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
+        let runningAge = RunningAge(birthdate: profile.dateOfBirth, birthtime: profile.timeOfBirth, timeZone: timeZone)
+        let seconds = Int(runningAge.calculateLifetimeInSeconds(currentDate: now))
+        let formatted = String(seconds)
+        return formatted.compactMap { Int(String($0)) }
+    }
+    
+    // MARK: - Removed lifetimeInSecondsParts usage
     
     private func handleInitialScreen() {
         if profiles.isEmpty {
@@ -93,38 +108,6 @@ struct ContentView: View {
         hasCheckedProfiles = true
     }
 
-    private var lifetimeInSecondsParts: (prefix: String, lastDigit: Int, formatted: String) {
-        guard let profile = activeProfile else { return ("", 0, "") }
-        let timeZone = TimeZone(identifier: profile.timeZoneIdentifier) ?? .current
-        let runningAge = RunningAge(birthdate: profile.dateOfBirth, birthtime: profile.timeOfBirth, timeZone: timeZone)
-        let seconds = Int(runningAge.calculateLifetimeInSeconds(currentDate: now))
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.maximumFractionDigits = 0
-        let formatted = formatter.string(from: NSNumber(value: seconds)) ?? "\(seconds)"
-        // Remove separators to get the last digit correctly
-        let compact = formatted.replacingOccurrences(of: ",", with: "").replacingOccurrences(of: ".", with: "")
-        guard let last = compact.last, let digit = Int(String(last)) else { return (formatted, 0, formatted) }
-        let prefixCount = compact.count - 1
-        // Find the range of prefix in formatted (with separators)
-        var prefix = formatted
-        if prefixCount > 0 {
-            // Remove last digit in compact form from formatted.
-            // Find the last digit in formatted by walking from the end.
-            var removed = 0
-            var idx = formatted.endIndex
-            while idx > formatted.startIndex && removed < 1 {
-                idx = formatted.index(before: idx)
-                let char = formatted[idx]
-                if char.isWholeNumber { removed += 1 }
-            }
-            prefix = String(formatted[..<idx])
-        } else {
-            prefix = ""
-        }
-        return (prefix, digit, formatted)
-    }
-    
     /// Requests notification permission if not already granted.
     private func setupNotifications() {
         requestNotificationAuthorizationIfNeeded()
@@ -141,35 +124,42 @@ struct ContentView: View {
                     // Main app view with greeting
                     NavigationView {
                         ZStack {
-							
-							LinearGradient(
-								gradient: Gradient(colors: [Color.black, Color.purple]),
-								startPoint: .topLeading,
-								endPoint: .bottomTrailing
-							)
+                            
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.black, Color.purple]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                             .ignoresSafeArea()
-							
-							// Fireworks background
-							FireworksView()
-								.ignoresSafeArea()
+                            
+                            // Fireworks background
+                            FireworksView()
+                                .ignoresSafeArea()
 
-							// main view
-                            VStack(spacing: 20) {
+                            // main view
+                            VStack(spacing: 0) {
                                 Text("Hello, \(profile.nickname)!")
                                     .font(.largeTitle)
                                     .foregroundColor(.white)
                                     .shadow(radius: 5)
-                                
+								
+								Text("Your Era spans\n ")
+									.foregroundColor(.white)
+									.font(Font.largeTitle.bold())
+									.multilineTextAlignment(.center)
+								
                                 HStack(spacing: 0) {
-                                    Text(lifetimeInSecondsParts.prefix)
-                                        .foregroundColor(.white)
-										.font(Font.title.bold())
-									
-                                    AnimatedDigitView(digit: lifetimeInSecondsParts.lastDigit)
+                                    ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
+                                        AnimatedDigitView(digit: digit)
+                                    }
                                     Text(" seconds")
                                         .foregroundColor(.white)
-                                        .font(Font.title.bold())
+                                        .font(Font.largeTitle.bold())
                                 }
+                                .onChange(of: lifetimeDigits) { _, newDigits in
+                                    previousDigits = newDigits
+                                }
+                                
                                 // add zodiac here
                                 if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                     Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
@@ -190,44 +180,44 @@ struct ContentView: View {
                                 
                             }
                         }
-						.toolbar {
-							ToolbarItem(placement: .bottomBar) {
-								HStack {
-									Button {
-										showSettingsSheet = true
-									} label: {
-										Image(systemName: "gearshape")
-											.imageScale(.large)
-											.foregroundColor(.white)
-									}
-									.accessibilityLabel("Settings")
+                        .toolbar {
+                            ToolbarItem(placement: .bottomBar) {
+                                HStack {
+                                    Button {
+                                        showSettingsSheet = true
+                                    } label: {
+                                        Image(systemName: "gearshape")
+                                            .imageScale(.large)
+                                            .foregroundColor(.white)
+                                    }
+                                    .accessibilityLabel("Settings")
 
-									Spacer()
+                                    Spacer()
 
-									Button {
-										profileFormInitial = profile
-										showProfileForm = true
-									} label: {
-										Image(systemName: "person")
-											.imageScale(.large)
-											.foregroundColor(.white)
-									}
-									.accessibilityLabel("Edit Profile")
-								}
-								.frame(maxWidth: .infinity)
-							}
-							.sharedBackgroundVisibility(.hidden)
-						}
-						.navigationBarTitleDisplayMode(.inline)
+                                    Button {
+                                        profileFormInitial = profile
+                                        showProfileForm = true
+                                    } label: {
+                                        Image(systemName: "person")
+                                            .imageScale(.large)
+                                            .foregroundColor(.white)
+                                    }
+                                    .accessibilityLabel("Edit Profile")
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                            .sharedBackgroundVisibility(.hidden)
+                        }
+                        .navigationBarTitleDisplayMode(.inline)
                     }
                 } else {
                     // Show background while waiting for profile
                     ZStack {
-						LinearGradient(
-							gradient: Gradient(colors: [Color.black, Color.purple]),
-							startPoint: .topLeading,
-							endPoint: .bottomTrailing
-						)
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color.black, Color.purple]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                         .ignoresSafeArea()
                     }
                 }
@@ -363,4 +353,3 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
-
