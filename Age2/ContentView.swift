@@ -340,7 +340,9 @@ struct ContentView: View {
             )
         }
         .sheet(isPresented: $showSettingsSheet) {
-            SettingsView()
+            NavigationStack {
+                SettingsView()
+            }
         }
     }
 
@@ -353,3 +355,4 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
+

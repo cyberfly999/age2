@@ -74,6 +74,8 @@ struct NotificationIntervalRow: View {
 }
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+    
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
     @State private var showNotificationOptions = false
@@ -137,6 +139,15 @@ struct SettingsView: View {
             }
         }
         .navigationTitle("Settings")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                }
+            }
+        }
         .animation(.default, value: showNotificationOptions)
     }
 }
