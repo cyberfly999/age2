@@ -32,9 +32,9 @@ struct AnimatedDigitView: View {
     var digit: Int
     var body: some View {
         Text("\(displayedDigit)")
-            .font(.largeTitle.bold())
+            .font(Font.system(size: 66, weight: .bold, design: .rounded))
             .foregroundColor(.white)
-            .frame(width: 28)
+            .frame(width: 43, height: 150)
             .rotation3DEffect(
                 .degrees(rotation),
                 axis: (x: 1, y: 0, z: 0)
@@ -152,10 +152,11 @@ struct ContentView: View {
                                     ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
                                         AnimatedDigitView(digit: digit)
                                     }
-                                    Text(" seconds")
-                                        .foregroundColor(.white)
-                                        .font(Font.largeTitle.bold())
+                                   
                                 }
+								Text(" seconds")
+									.foregroundColor(.white)
+									.font(Font.largeTitle.bold())
                                 .onChange(of: lifetimeDigits) { _, newDigits in
                                     previousDigits = newDigits
                                 }
