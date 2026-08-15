@@ -114,10 +114,11 @@ struct ContentView: View {
                                     let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
                                     if !zodiacSymbol.isEmpty {
                                         Text(zodiacSymbol)
-                                            .font(.system(size: 480, weight: .bold))
-                                            .foregroundColor(.white)
-                                            .opacity(0.2)
-											.blur(radius: 5)
+                                            .font(.system(size: 640, weight: .bold))
+											.foregroundColor(.black)
+											.blur(radius: 2)
+											.opacity(0.15)
+											.shadow(color: .white, radius: 10)
                                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                                             .allowsHitTesting(false)
                                     }
