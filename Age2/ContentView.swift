@@ -109,48 +109,60 @@ struct ContentView: View {
                                 .ignoresSafeArea()
 
                             // main view
-                            VStack(spacing: 0) {
-                                Text("Hello, \(profile.nickname)!")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.white)
-                                    .shadow(radius: 5)
-								
-								Text("Your Era spans\n ")
-									.foregroundColor(.white)
-									.font(Font.largeTitle.bold())
-									.multilineTextAlignment(.center)
-								
-                                HStack(spacing: 0) {
-                                    ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
-                                        AnimatedDigitView(digit: digit)
-                                    }
-								}
-								Text(" seconds")
-									.foregroundColor(.white)
-									.font(Font.largeTitle.bold())
-									
-                                .onChange(of: lifetimeDigits) { _, newDigits in
-                                    previousDigits = newDigits
-                                }
-                                
-                                // add zodiac here
-                                if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
-                                    Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
-                                        .foregroundColor(.white)
-                                }
-                                
-                                if notificationsEnabled {
-                                    Button(action: { NotificationManager.shared.scheduleMultipleNotifications(number: 5, interval: 10) }) {
-                                        Text("Test Notifications")
+                            ZStack {
+                                if showZodiac {
+                                    let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
+                                    if !zodiacSymbol.isEmpty {
+                                        Text(zodiacSymbol)
+                                            .font(.system(size: 480, weight: .bold))
                                             .foregroundColor(.white)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 8)
-                                            .background(Color.blue.opacity(0.8))
-                                            .cornerRadius(8)
+                                            .opacity(0.2)
+											.blur(radius: 5)
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                            .allowsHitTesting(false)
                                     }
-                                    .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
                                 }
-                                
+                                VStack(spacing: 0) {
+                                    Text("Hello, \(profile.nickname)!")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.white)
+                                        .shadow(radius: 5)
+                                    
+                                    Text("Your Era spans\n ")
+                                        .foregroundColor(.white)
+                                        .font(Font.largeTitle.bold())
+                                        .multilineTextAlignment(.center)
+                                    
+                                    HStack(spacing: 0) {
+                                        ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
+                                            AnimatedDigitView(digit: digit)
+                                        }
+                                    }
+                                    Text(" seconds")
+                                        .foregroundColor(.white)
+                                        .font(Font.largeTitle.bold())
+                                        .onChange(of: lifetimeDigits) { _, newDigits in
+                                            previousDigits = newDigits
+                                        }
+                                    
+                                    // add zodiac here
+                                    if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
+                                        Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
+                                            .foregroundColor(.white)
+                                    }
+                                    
+                                    if notificationsEnabled {
+                                        Button(action: { NotificationManager.shared.scheduleMultipleNotifications(number: 5, interval: 10) }) {
+                                            Text("Test Notifications")
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 8)
+                                                .padding(.vertical, 8)
+                                                .background(Color.blue.opacity(0.8))
+                                                .cornerRadius(8)
+                                        }
+                                        .accessibilityLabel(Text("Send a couple of Scheduled Notifications"))
+                                    }
+                                }
                             }
                         }
                         .toolbar {

@@ -146,7 +146,7 @@ final class ZodiacCalculator {
 		if zodiac.isEmpty {
 			return "You seem to not have any zodiac ..."
 		} else {
-			return String(localized: "Your Zodiac is \(zodiac)")
+			return String(localized: "\(zodiac)")
 		}
 	}
 }
