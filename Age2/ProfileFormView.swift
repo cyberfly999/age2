@@ -11,8 +11,9 @@ struct ProfileFormView: View {
     @State private var timeOfBirth: Date
     @State private var gender: String?
     @State private var selectedTimeZone: String
-
-    let genders = ["Male", "Female", "Other", "Prefer not to say"]
+	@State private var showKlingonAlert = false
+	
+    let genders = ["Female", "Male", "Other", "Unimportant", "None of your business", "Not made of plastic", "Klingon", "Whatever"]
 
     var onComplete: (UserProfile) -> Void
     var onCancel: (() -> Void)? = nil
@@ -53,21 +54,35 @@ struct ProfileFormView: View {
                     DatePicker("Date", selection: $dateOfBirth, displayedComponents: .date)
                     DatePicker("Time", selection: $timeOfBirth, displayedComponents: .hourAndMinute)
                 }
+				
+				Section(header: Text("Gender (optional)")) {
+					Picker("Gender", selection: Binding(
+						get: { gender ?? "" },
+						set: { newValue in
+							if newValue == "Klingon" {
+								showKlingonAlert = true
+							} else {
+								gender = newValue.isEmpty ? nil : newValue
+							}
+						})
+					) {
+						Text("None").tag("")
 
-                Section(header: Text("Gender (optional)")) {
-                    Picker("Gender", selection: Binding(
-                        get: { gender ?? "" },
-                        set: { newValue in
-                            gender = newValue.isEmpty ? nil : newValue
-                        })
-                    ) {
-                        Text("None").tag("")
-                        ForEach(genders, id: \.self) { genderOption in
-                            Text(genderOption).tag(genderOption)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
+						ForEach(genders, id: \.self) { genderOption in
+							Text(genderOption).tag(genderOption)
+						}
+					}
+					.pickerStyle(.menu)
+				}
+				.alert("Klingon is not a gender!", isPresented: $showKlingonAlert) {
+					Button("Use Other") {
+						gender = "Other"
+					}
+
+					Button("None") {
+						gender = nil
+					}
+				}
 
                 Section(header: Text("Time Zone")) {
                     Picker("Time Zone", selection: $selectedTimeZone) {
