@@ -78,10 +78,11 @@ struct ProfileFormView: View {
 					Button("Use Other") {
 						gender = "Other"
 					}
-
-					Button("None") {
-						gender = nil
+					
+					Button("Force Klingon") {
+						gender = "Klingon"
 					}
+					
 				}
 
                 Section(header: Text("Time Zone")) {
