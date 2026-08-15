@@ -173,7 +173,7 @@ struct ContentView: View {
                                         showSettingsSheet = true
                                     } label: {
                                         Image(systemName: "gearshape")
-                                            .imageScale(.large)
+                                            .font(.system(size: 24))
                                             .foregroundColor(.white)
                                     }
                                     .accessibilityLabel("Settings")
@@ -185,7 +185,7 @@ struct ContentView: View {
                                         showProfileForm = true
                                     } label: {
                                         Image(systemName: "person")
-                                            .imageScale(.large)
+                                            .font(.system(size: 24))
                                             .foregroundColor(.white)
                                     }
                                     .accessibilityLabel("Edit Profile")
