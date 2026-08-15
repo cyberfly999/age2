@@ -26,34 +26,6 @@ private func requestNotificationAuthorizationIfNeeded() {
     }
 }
 
-struct AnimatedDigitView: View {
-    @State private var displayedDigit: Int = 0
-    @State private var rotation: Double = 0
-    var digit: Int
-    var body: some View {
-        Text("\(displayedDigit)")
-            .font(Font.system(size: 66, weight: .bold, design: .rounded))
-            .foregroundColor(.white)
-            .frame(width: 43, height: 150)
-            .rotation3DEffect(
-                .degrees(rotation),
-                axis: (x: 1, y: 0, z: 0)
-            )
-            .onChange(of: digit) { _, newValue in
-                if newValue != displayedDigit {
-                    withAnimation(.spring(response: 1.0, dampingFraction: 0.6)) {
-                        rotation += 360
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.13) {
-                        displayedDigit = newValue
-                    }
-                }
-            }
-            .onAppear {
-                displayedDigit = digit
-            }
-    }
-}
 
 // MARK: - ContentView
 
@@ -152,11 +124,11 @@ struct ContentView: View {
                                     ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
                                         AnimatedDigitView(digit: digit)
                                     }
-                                   
-                                }
+								}
 								Text(" seconds")
 									.foregroundColor(.white)
 									.font(Font.largeTitle.bold())
+									
                                 .onChange(of: lifetimeDigits) { _, newDigits in
                                     previousDigits = newDigits
                                 }
