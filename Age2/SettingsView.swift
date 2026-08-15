@@ -1,9 +1,10 @@
 import SwiftUI
 
 let presetAmounts = [10, 100, 1000, 10000, 100000]
+let notificationIntervalsKey = "notificationIntervals"
 
-struct NotificationInterval: Identifiable, Hashable {
-    let id = UUID()
+struct NotificationInterval: Identifiable, Codable, Hashable {
+    var id: UUID = UUID()
     var value: Int
     var unit: String
     var name: String = "My New Birthday"
@@ -78,9 +79,16 @@ struct SettingsView: View {
     
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
+    @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
+    @State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
-    @State private var notificationIntervals: [NotificationInterval] = [NotificationInterval(value: 1, unit: "Seconds")]
     let notificationUnits = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Months", "Years"]
+    
+    private func saveNotificationIntervals() {
+        if let encoded = try? JSONEncoder().encode(notificationIntervals) {
+            notificationIntervalsData = encoded
+        }
+    }
     
     var body: some View {
         Form {
@@ -149,6 +157,16 @@ struct SettingsView: View {
             }
         }
         .animation(.default, value: showNotificationOptions)
+        .onAppear {
+            if let decoded = try? JSONDecoder().decode([NotificationInterval].self, from: notificationIntervalsData), !decoded.isEmpty {
+                notificationIntervals = decoded
+            } else {
+                notificationIntervals = [NotificationInterval(value: 1, unit: "Seconds")]
+            }
+        }
+        .onChange(of: notificationIntervals) {
+            saveNotificationIntervals()
+        }
     }
 }
 
