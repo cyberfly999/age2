@@ -116,14 +116,19 @@ struct ContentView: View {
                                 if showZodiac {
                                     let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
                                     if !zodiacSymbol.isEmpty {
-                                        Text(zodiacSymbol)
-                                            .font(.system(size: 640, weight: .bold))
-											.foregroundColor(Color.black.opacity(0.3))
-											.blur(radius: 2)
-											.opacity(1)
-											.shadow(color: .white, radius: 30)
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                            .allowsHitTesting(false)
+                                        TimelineView(.animation) { context in
+                                            let seconds = context.date.timeIntervalSinceReferenceDate
+                                            let angle = Angle.degrees((seconds.truncatingRemainder(dividingBy: 24)) / 24 * 360)
+                                            Text(zodiacSymbol)
+                                                .font(.system(size: 640, weight: .bold))
+                                                .foregroundColor(Color.black.opacity(0.3))
+                                                .blur(radius: 0)
+                                                .opacity(1)
+                                                .shadow(color: .white, radius: 30)
+                                                .rotation3DEffect(angle, axis: (x: 0, y: 1, z: 0))
+                                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                                .allowsHitTesting(false)
+                                        }
                                     }
                                 }
                                 VStack(spacing: 0) {
@@ -131,7 +136,9 @@ struct ContentView: View {
                                         .font(.largeTitle)
                                         .foregroundColor(.white)
                                         .shadow(radius: 5)
-                                    
+                                        .padding(.bottom, 10)
+										.multilineTextAlignment(.center)
+
                                     Text("Your Era spans\n ")
                                         .foregroundColor(.white)
                                         .font(Font.largeTitle.bold())
@@ -142,7 +149,7 @@ struct ContentView: View {
                                             AnimatedDigitView(digit: digit)
                                         }
                                     }
-									.shadow(color: .white, radius: 15)
+                                    .shadow(color: .white, radius: 15)
 
                                     Text(" seconds")
                                         .foregroundColor(.white)
@@ -150,7 +157,9 @@ struct ContentView: View {
                                         .onChange(of: lifetimeDigits) { _, newDigits in
                                             previousDigits = newDigits
                                         }
-                                    
+                                        .padding(.bottom, 80)
+										.multilineTextAlignment(.center)
+
                                     // add zodiac here
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                         Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
@@ -221,6 +230,7 @@ struct ContentView: View {
         .onAppear {
             // Always reset splash on every app launch, including after being killed
             showSplash = true
+            
             setupNotifications()
             // At launch, show splash for n seconds as in let showSplashFor then fade out and decide next screen
             DispatchQueue.main.asyncAfter(deadline: .now() + showSplashFor) {
