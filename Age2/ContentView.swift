@@ -105,8 +105,8 @@ struct ContentView: View {
                             .ignoresSafeArea()
                             
                             // Fireworks background
-                            FireworksView()
-                                .ignoresSafeArea()
+                           // FireworksView()
+                             //   .ignoresSafeArea()
 
                             // main view
                             ZStack {
@@ -115,10 +115,10 @@ struct ContentView: View {
                                     if !zodiacSymbol.isEmpty {
                                         Text(zodiacSymbol)
                                             .font(.system(size: 640, weight: .bold))
-											.foregroundColor(.black)
+											.foregroundColor(Color.blue.opacity(0.5))
 											.blur(radius: 2)
-											.opacity(0.15)
-											.shadow(color: .white, radius: 10)
+											.opacity(1)
+											.shadow(color: .white, radius: 30)
                                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                                             .allowsHitTesting(false)
                                     }
@@ -139,6 +139,8 @@ struct ContentView: View {
                                             AnimatedDigitView(digit: digit)
                                         }
                                     }
+									.shadow(color: .white, radius: 15)
+
                                     Text(" seconds")
                                         .foregroundColor(.white)
                                         .font(Font.largeTitle.bold())
