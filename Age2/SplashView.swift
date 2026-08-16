@@ -6,13 +6,17 @@
 import SwiftUI
 
 struct SplashView: View {
+	@AppStorage("userColorHex") private var userColorHex: String = "#800080"
+
+	private var userColor: Color { Color(hex: userColorHex) ?? .purple }
+
     @State private var rotation: Double = 0
     var rotationDuration: Double = 2.0 // seconds per rotation
     
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color.black, Color.purple]),
+                gradient: Gradient(colors: [Color.black, userColor]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )

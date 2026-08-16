@@ -34,6 +34,9 @@ struct ContentView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = true
+    @AppStorage("userColorHex") private var userColorHex: String = "#800080"
+
+    private var userColor: Color { Color(hex: userColorHex) ?? .purple }
 
     @Query private var profiles: [UserProfile]
 
@@ -98,7 +101,7 @@ struct ContentView: View {
                         ZStack {
                             
                             LinearGradient(
-                                gradient: Gradient(colors: [Color.black, Color.purple]),
+                                gradient: Gradient(colors: [Color.black, userColor]),
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -202,7 +205,7 @@ struct ContentView: View {
                     // Show background while waiting for profile
                     ZStack {
                         LinearGradient(
-                            gradient: Gradient(colors: [Color.black, Color.purple]),
+                            gradient: Gradient(colors: [Color.black, userColor]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )

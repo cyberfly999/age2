@@ -68,12 +68,12 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
     @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
-	//@AppStorage("userColor") private var userColor: Color = Color.purple
-
+	@AppStorage("userColorHex") private var userColorHex: String = "#800080"
 	
+	@State private var userColorSelection: Color = .purple
+
 	@State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
-	@State private var userColor: Color = Color.purple
 
     let notificationUnits = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Months", "Years"]
     
@@ -85,14 +85,15 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
+			Section(header: Text("Favorite Color")) {
+				ColorPicker("Color", selection: $userColorSelection)
+                    .onChange(of: userColorSelection) {
+                        userColorHex = userColorSelection.toHexString() ?? "#800080"
+                    }
+			}
 			Section(header: Text("Zodiac")) {
 				Toggle("Show Zodiac", isOn: $showZodiac)
 			}
-			Section(header: Text("Favorite Color")) {
-				ColorPicker("Color",
-					selection: $userColor)
-			}
-
             Section(header: Text("Notifications")) {
                 Toggle("Enable Notifications", isOn: $notificationsEnabled)
                     .onChange(of: notificationsEnabled) { _, newValue in
@@ -160,10 +161,42 @@ struct SettingsView: View {
             } else {
                 notificationIntervals = [NotificationInterval(value: 1, unit: "Seconds")]
             }
+            userColorSelection = Color(hex: userColorHex) ?? .purple
         }
         .onChange(of: notificationIntervals) {
             saveNotificationIntervals()
         }
+    }
+}
+
+extension Color {
+    init?(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+        var rgb: UInt64 = 0
+        guard Scanner(string: hexSanitized).scanHexInt64(&rgb) else { return nil }
+        let r, g, b: Double
+        switch hexSanitized.count {
+        case 6:
+            r = Double((rgb & 0xFF0000) >> 16) / 255.0
+            g = Double((rgb & 0x00FF00) >> 8) / 255.0
+            b = Double(rgb & 0x0000FF) / 255.0
+        default:
+            return nil
+        }
+        self = Color(red: r, green: g, blue: b)
+    }
+    func toHexString() -> String? {
+        let uiColor = UIColor(self)
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard uiColor.getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return nil }
+        let r = Int(red * 255)
+        let g = Int(green * 255)
+        let b = Int(blue * 255)
+        return String(format: "#%02X%02X%02X", r, g, b)
     }
 }
 
