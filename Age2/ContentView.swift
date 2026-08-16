@@ -115,7 +115,7 @@ struct ContentView: View {
                                     if !zodiacSymbol.isEmpty {
                                         Text(zodiacSymbol)
                                             .font(.system(size: 640, weight: .bold))
-											.foregroundColor(Color.blue.opacity(0.5))
+											.foregroundColor(Color.black.opacity(0.3))
 											.blur(radius: 2)
 											.opacity(1)
 											.shadow(color: .white, radius: 30)
