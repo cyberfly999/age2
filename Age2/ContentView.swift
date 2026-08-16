@@ -44,13 +44,10 @@ struct ContentView: View {
     @State private var showOnboarding = false
     @State private var showProfileForm = false
     @State private var showSettingsSheet = false
-
     @State private var activeProfile: UserProfile? = nil
-    
     @State private var now = Date()
-    
     @State private var showSplash = true
-    private let showSplashFor: TimeInterval = 3
+    private let showSplashFor: TimeInterval = 2
 
     @State private var hasCheckedProfiles = false
 
@@ -136,14 +133,15 @@ struct ContentView: View {
                                         .font(.largeTitle)
                                         .foregroundColor(.white)
                                         .shadow(radius: 5)
-                                        .padding(.bottom, 10)
+                                        .padding(.bottom, 100)
 										.multilineTextAlignment(.center)
 
                                     Text("Your Era spans\n ")
                                         .foregroundColor(.white)
-                                        .font(Font.largeTitle.bold())
+										.font(Font.system(size: 30, weight: .light, design: .default))
                                         .multilineTextAlignment(.center)
                                     
+									// running seconds
                                     HStack(spacing: 0) {
                                         ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
                                             AnimatedDigitView(digit: digit)
@@ -151,19 +149,19 @@ struct ContentView: View {
                                     }
                                     .shadow(color: .white, radius: 15)
 
-                                    Text(" seconds")
+                                    Text("seconds")
                                         .foregroundColor(.white)
-                                        .font(Font.largeTitle.bold())
+										.font(Font.system(size: 30, weight: .light, design: .default))
                                         .onChange(of: lifetimeDigits) { _, newDigits in
                                             previousDigits = newDigits
                                         }
-                                        .padding(.bottom, 80)
-										.multilineTextAlignment(.center)
+                                        .padding(.bottom, 180)
+										//.multilineTextAlignment(.center)
 
                                     // add zodiac here
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
-                                        Text(ZodiacCalculator.zodiacSignText(for: activeProfile))
-                                            .foregroundColor(.white)
+										Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
+											.foregroundColor(.white)
                                     }
                                     
                                     if notificationsEnabled {

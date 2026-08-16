@@ -19,7 +19,7 @@ struct AnimatedDigitView: View {
 		Text("\(displayedDigit)")
 			.font(Font.system(size: fontSize, weight: .light, design: .default))
 			.foregroundColor(.white)
-			.frame(width: 41, height: 150)
+			.frame(width: 41, height: 80)
 			.rotation3DEffect(
 				.degrees(sin(wobblePhase) * 8),
 				axis: (x: 1, y: 1, z: 1),
@@ -28,7 +28,7 @@ struct AnimatedDigitView: View {
 			.rotation3DEffect(
 				.degrees(rotation),
 				axis: (x: 1, y: 0, z: 0),
-				perspective: 2.5
+				perspective: 1.5
 			)
 			.onChange(of: digit) { _, newValue in
 				if newValue != displayedDigit {
