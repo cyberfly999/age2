@@ -51,18 +51,6 @@ struct NotificationIntervalRow: View {
                     }
                 }
                 .pickerStyle(.menu)
-                // Spacer()
-                
-                
-                // optional delete button, let it commented
-//                if let onDelete = onDelete {
-//                    Button(role: .destructive) {
-//                        onDelete()
-//                    } label: {
-//                        Image(systemName: "trash")
-//                    }
-//                    .buttonStyle(.borderless)
-//                }
             }
             
             TextField("Title", text: $interval.name)
@@ -80,8 +68,13 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
     @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
-    @State private var notificationIntervals: [NotificationInterval] = []
+	//@AppStorage("userColor") private var userColor: Color = Color.purple
+
+	
+	@State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
+	@State private var userColor: Color = Color.purple
+
     let notificationUnits = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Months", "Years"]
     
     private func saveNotificationIntervals() {
@@ -95,7 +88,11 @@ struct SettingsView: View {
 			Section(header: Text("Zodiac")) {
 				Toggle("Show Zodiac", isOn: $showZodiac)
 			}
-			
+			Section(header: Text("Favorite Color")) {
+				ColorPicker("Color",
+					selection: $userColor)
+			}
+
             Section(header: Text("Notifications")) {
                 Toggle("Enable Notifications", isOn: $notificationsEnabled)
                     .onChange(of: notificationsEnabled) { _, newValue in
