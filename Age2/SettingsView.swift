@@ -68,9 +68,6 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
     @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
-	@AppStorage("userColorHex") private var userColorHex: String = "#800080"
-	
-	@State private var userColorSelection: Color = .purple
 
 	@State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
@@ -85,12 +82,7 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-			Section(header: Text("Favorite Color")) {
-				ColorPicker("Color", selection: $userColorSelection)
-                    .onChange(of: userColorSelection) {
-                        userColorHex = userColorSelection.toHexString() ?? "#800080"
-                    }
-			}
+			
 			Section(header: Text("Zodiac")) {
 				Toggle("Show Zodiac", isOn: $showZodiac)
 			}
@@ -161,7 +153,6 @@ struct SettingsView: View {
             } else {
                 notificationIntervals = [NotificationInterval(value: 1, unit: "Seconds")]
             }
-            userColorSelection = Color(hex: userColorHex) ?? .purple
         }
         .onChange(of: notificationIntervals) {
             saveNotificationIntervals()

@@ -12,7 +12,10 @@ struct ProfileFormView: View {
     @State private var gender: String?
     @State private var selectedTimeZone: String
 	@State private var showKlingonAlert = false
+	@AppStorage("userColorHex") private var userColorHex: String = "#800080"
 	
+	@State private var userColorSelection: Color = .purple
+
     let genders = ["Female", "Male", "Other", "Unimportant", "None of your business", "Not made of plastic", "Klingon", "Whatever"]
 
     var onComplete: (UserProfile) -> Void
@@ -40,6 +43,30 @@ struct ProfileFormView: View {
                         .autocapitalization(.words)
                         .disableAutocorrection(true)
                 }
+				Section(header: Text("Date of Birth")) {
+					DatePicker("Date", selection: $dateOfBirth, displayedComponents: .date)
+					DatePicker("Time", selection: $timeOfBirth, displayedComponents: .hourAndMinute)
+				}
+
+				Section(header: Text("Time Zone")) {
+					Picker("Time Zone", selection: $selectedTimeZone) {
+						Text(TimeZone.current.identifier + " (Current)").tag(TimeZone.current.identifier)
+						ForEach(TimeZone.knownTimeZoneIdentifiers, id: \.self) { timeZoneID in
+							Text(timeZoneID).tag(timeZoneID)
+						}
+					}
+					.pickerStyle(.menu)
+				}
+
+				Section(header: Text("Favorite Color")) {
+					ColorPicker("Color", selection: $userColorSelection)
+						.onChange(of: userColorSelection) {
+							userColorHex = userColorSelection.toHexString() ?? "#800080"
+						}
+				}
+				.onAppear() {
+					userColorSelection = Color(hex: userColorHex) ?? .purple
+				}
 
                 Section(header: Text("Name")) {
                     TextField("Prename (optional)", text: $prename)
@@ -50,11 +77,7 @@ struct ProfileFormView: View {
                         .disableAutocorrection(true)
                 }
 
-                Section(header: Text("Date of Birth")) {
-                    DatePicker("Date", selection: $dateOfBirth, displayedComponents: .date)
-                    DatePicker("Time", selection: $timeOfBirth, displayedComponents: .hourAndMinute)
-                }
-				
+  				
 				Section(header: Text("Gender (optional)")) {
 					Picker("Gender", selection: Binding(
 						get: { gender ?? "" },
@@ -85,16 +108,7 @@ struct ProfileFormView: View {
 					
 				}
 
-                Section(header: Text("Time Zone")) {
-                    Picker("Time Zone", selection: $selectedTimeZone) {
-                        Text(TimeZone.current.identifier + " (Current)").tag(TimeZone.current.identifier)
-                        ForEach(TimeZone.knownTimeZoneIdentifiers, id: \.self) { timeZoneID in
-                            Text(timeZoneID).tag(timeZoneID)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                }
-            }
+             }
             .navigationTitle(editingProfile == nil ? "Create Profile" : "Edit Profile")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
