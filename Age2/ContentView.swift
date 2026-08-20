@@ -88,15 +88,15 @@ struct ContentView: View {
         let utterance = AVSpeechUtterance(string: text)
         // Try to find a male voice for the current locale
         let currentLocale = Locale.current.identifier
-        let maleVoice = AVSpeechSynthesisVoice.speechVoices().first {
+        let voice = AVSpeechSynthesisVoice.speechVoices().first {
             $0.language == currentLocale && $0.gender == .male
         }
         // Fallback: Try to find any male voice for the language (not region-specific)
 		let languageCode = Locale.current.language.languageCode?.identifier ?? "de-CH"
-        let fallbackMaleVoice = AVSpeechSynthesisVoice.speechVoices().first {
+        let fallbackVoice = AVSpeechSynthesisVoice.speechVoices().first {
             $0.language.hasPrefix(languageCode) && $0.gender == .male
         }
-        utterance.voice = maleVoice ?? fallbackMaleVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
+        utterance.voice = voice ?? fallbackVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
         AVSpeechSynthesizer().speak(utterance)
     }
     
@@ -159,7 +159,7 @@ struct ContentView: View {
 									// running seconds -------------------------------------------------------------------
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
-                                        speak("Your Era spans " + numberString + " Seconds")
+                                        speak("Hi \(profile.nickname), Your Era spans \(numberString) Seconds")
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
