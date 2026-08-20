@@ -86,7 +86,17 @@ struct ContentView: View {
     
     private func speak(_ text: String) {
         let utterance = AVSpeechUtterance(string: text)
-		utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
+        // Try to find a male voice for the current locale
+        let currentLocale = Locale.current.identifier
+        let maleVoice = AVSpeechSynthesisVoice.speechVoices().first {
+            $0.language == currentLocale && $0.gender == .male
+        }
+        // Fallback: Try to find any male voice for the language (not region-specific)
+		let languageCode = Locale.current.language.languageCode?.identifier ?? "de-CH"
+        let fallbackMaleVoice = AVSpeechSynthesisVoice.speechVoices().first {
+            $0.language.hasPrefix(languageCode) && $0.gender == .male
+        }
+        utterance.voice = maleVoice ?? fallbackMaleVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
         AVSpeechSynthesizer().speak(utterance)
     }
     
