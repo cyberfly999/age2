@@ -12,6 +12,7 @@ import UIKit
 internal import Combine
 import Foundation
 import UserNotifications
+import AVFoundation
 
 /// Ensures notification permissions are requested on app launch or before scheduling notifications.
 private func requestNotificationAuthorizationIfNeeded() {
@@ -85,6 +86,12 @@ struct ContentView: View {
         requestNotificationAuthorizationIfNeeded()
     }
     
+    private func speak(_ text: String) {
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
+        AVSpeechSynthesizer().speak(utterance)
+    }
+    
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
         let shouldShowOnboarding = hasCheckedProfiles && showOnboarding && !hasProfile && !showSplash
@@ -142,11 +149,18 @@ struct ContentView: View {
                                         .multilineTextAlignment(.center)
                                     
 									// running seconds
-                                    HStack(spacing: 0) {
-                                        ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
-                                            AnimatedDigitView(digit: digit)
+                                    Button(action: {
+                                        let numberString = lifetimeDigits.map(String.init).joined()
+                                        speak(numberString)
+                                    }) {
+                                        HStack(spacing: 0) {
+                                            ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
+                                                AnimatedDigitView(digit: digit)
+                                            }
                                         }
                                     }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(Text("Tap to speak your lifetime in seconds"))
                                     .shadow(color: .white, radius: 15)
 
                                     Text("seconds")
