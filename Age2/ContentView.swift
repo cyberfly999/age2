@@ -53,9 +53,7 @@ struct ContentView: View {
     @State private var hasCheckedProfiles = false
 
     private var hasProfile: Bool { profiles.first != nil }
-    
-    // MARK: - New per instructions
-    
+        
     @State private var previousDigits: [Int] = []
     
     private var lifetimeDigits: [Int] {
@@ -111,7 +109,7 @@ struct ContentView: View {
                             )
                             .ignoresSafeArea()
                             
-                            // Fireworks background
+                            // Fireworks background -----------------------------------------------------
                            // FireworksView()
                              //   .ignoresSafeArea()
 
@@ -148,7 +146,7 @@ struct ContentView: View {
 										.font(Font.system(size: 30, weight: .light, design: .default))
                                         .multilineTextAlignment(.center)
                                     
-									// running seconds
+									// running seconds -------------------------------------------------------------------
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
                                         speak(numberString)
@@ -170,9 +168,8 @@ struct ContentView: View {
                                             previousDigits = newDigits
                                         }
                                         .padding(.bottom, 180)
-										//.multilineTextAlignment(.center)
 
-                                    // add zodiac here
+                                    // zodiac ------------------------------------------------------------------------------------
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
 										Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
 											.foregroundColor(.white)
