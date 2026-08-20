@@ -86,7 +86,7 @@ struct ContentView: View {
     
     private func speak(_ text: String) {
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
+		utterance.voice = AVSpeechSynthesisVoice(language: Locale.current.identifier)
         AVSpeechSynthesizer().speak(utterance)
     }
     
@@ -149,7 +149,7 @@ struct ContentView: View {
 									// running seconds -------------------------------------------------------------------
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
-                                        speak(numberString)
+                                        speak("Your Era spans " + numberString + " Seconds")
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
