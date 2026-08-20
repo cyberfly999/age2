@@ -28,6 +28,21 @@ private func requestNotificationAuthorizationIfNeeded() {
 }
 
 
+// MARK: - SpeechSynthesizerDelegateHandler
+
+final class SpeechSynthesizerDelegateHandler: NSObject, AVSpeechSynthesizerDelegate {
+    var didFinishHandler: (() -> Void)?
+    var didCancelHandler: (() -> Void)?
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        didFinishHandler?()
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        didCancelHandler?()
+    }
+}
+
 // MARK: - ContentView
 
 struct ContentView: View {
@@ -65,6 +80,14 @@ struct ContentView: View {
         return formatted.compactMap { Int(String($0)) }
     }
     
+    // MARK: - Speech properties
+    
+    @State private var isSpeaking = false
+    private let speechSynthesizer = AVSpeechSynthesizer()
+    @State private var animatePulse = false
+    
+    private let speechDelegateHandler = SpeechSynthesizerDelegateHandler()
+    
     // MARK: - Removed lifetimeInSecondsParts usage
     
     private func handleInitialScreen() {
@@ -85,6 +108,7 @@ struct ContentView: View {
     }
     
     private func speak(_ text: String) {
+        guard !speechSynthesizer.isSpeaking else { return }
         let utterance = AVSpeechUtterance(string: text)
         // Try to find a male voice for the current locale
         let currentLocale = Locale.current.identifier
@@ -92,12 +116,14 @@ struct ContentView: View {
             $0.language == currentLocale && $0.gender == .male
         }
         // Fallback: Try to find any male voice for the language (not region-specific)
-		let languageCode = Locale.current.language.languageCode?.identifier ?? "de-CH"
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "de-CH"
         let fallbackVoice = AVSpeechSynthesisVoice.speechVoices().first {
             $0.language.hasPrefix(languageCode) && $0.gender == .male
         }
         utterance.voice = voice ?? fallbackVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
-        AVSpeechSynthesizer().speak(utterance)
+        speechSynthesizer.delegate = speechDelegateHandler
+        isSpeaking = true
+        speechSynthesizer.speak(utterance)
     }
     
     var body: some View {
@@ -149,14 +175,14 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                         .shadow(radius: 5)
                                         .padding(.bottom, 100)
-										.multilineTextAlignment(.center)
+                                        .multilineTextAlignment(.center)
 
                                     Text("Your Era spans\n ")
                                         .foregroundColor(.white)
-										.font(Font.system(size: 30, weight: .light, design: .default))
+                                        .font(Font.system(size: 30, weight: .light, design: .default))
                                         .multilineTextAlignment(.center)
                                     
-									// running seconds -------------------------------------------------------------------
+                                    // running seconds -------------------------------------------------------------------
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
                                         speak("Hi \(profile.nickname), Your Era spans \(numberString) Seconds")
@@ -166,6 +192,21 @@ struct ContentView: View {
                                                 AnimatedDigitView(digit: digit)
                                             }
                                         }
+                                        .scaleEffect(isSpeaking && animatePulse ? 1.1 : 1)
+                                        .foregroundColor(isSpeaking ? .red : .white)
+                                        .animation(isSpeaking ? Animation.easeInOut(duration: 0.6).repeatForever(autoreverses: true) : .default, value: animatePulse)
+                                        .onChange(of: isSpeaking) { _, speaking in
+                                            if speaking {
+                                                animatePulse = true
+                                            } else {
+                                                animatePulse = false
+                                            }
+                                        }
+                                        .onAppear {
+                                            if isSpeaking {
+                                                animatePulse = true
+                                            }
+                                        }
                                     }
                                     .buttonStyle(.plain)
                                     .accessibilityLabel(Text("Tap to speak your lifetime in seconds"))
@@ -173,7 +214,7 @@ struct ContentView: View {
 
                                     Text("seconds")
                                         .foregroundColor(.white)
-										.font(Font.system(size: 30, weight: .light, design: .default))
+                                        .font(Font.system(size: 30, weight: .light, design: .default))
                                         .onChange(of: lifetimeDigits) { _, newDigits in
                                             previousDigits = newDigits
                                         }
@@ -181,8 +222,8 @@ struct ContentView: View {
 
                                     // zodiac ------------------------------------------------------------------------------------
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
-										Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
-											.foregroundColor(.white)
+                                        Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
+                                            .foregroundColor(.white)
                                     }
                                     
                                     if notificationsEnabled {
@@ -247,6 +288,19 @@ struct ContentView: View {
             }
         }
         .onAppear {
+            speechDelegateHandler.didFinishHandler = {
+                DispatchQueue.main.async {
+                    isSpeaking = false
+                    animatePulse = false
+                }
+            }
+            speechDelegateHandler.didCancelHandler = {
+                DispatchQueue.main.async {
+                    isSpeaking = false
+                    animatePulse = false
+                }
+            }
+            speechSynthesizer.delegate = speechDelegateHandler
             // Always reset splash on every app launch, including after being killed
             showSplash = true
             
