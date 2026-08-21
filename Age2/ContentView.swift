@@ -112,19 +112,33 @@ struct ContentView: View {
         let utterance = AVSpeechUtterance(string: text)
         // Try to find a male voice for the current locale
         let currentLocale = Locale.current.identifier
-        let voice = AVSpeechSynthesisVoice.speechVoices().first {
-            $0.language == currentLocale && $0.gender == .male
+		let voice = AVSpeechSynthesisVoice.speechVoices().last {
+            $0.language == currentLocale && $0.gender == .female
         }
         // Fallback: Try to find any male voice for the language (not region-specific)
-        let languageCode = Locale.current.language.languageCode?.identifier ?? "de-CH"
-        let fallbackVoice = AVSpeechSynthesisVoice.speechVoices().first {
-            $0.language.hasPrefix(languageCode) && $0.gender == .male
+        let languageCode = Locale.current.language.languageCode?.identifier ?? "de"
+        let fallbackVoice = AVSpeechSynthesisVoice.speechVoices().last {
+			$0.language.hasPrefix(languageCode) && $0.gender == .female
         }
         utterance.voice = voice ?? fallbackVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
         speechSynthesizer.delegate = speechDelegateHandler
         isSpeaking = true
         speechSynthesizer.speak(utterance)
     }
+	
+	private func printAvailableVoices() {
+		   let voices = AVSpeechSynthesisVoice.speechVoices()
+		   let enUSVoices = voices.filter { $0.language.starts(with: "de") }
+		   
+		   print("Available en-US voices:")
+		   for voice in enUSVoices {
+			   print("Name: \(voice.name)")
+			   print("Identifier: \(voice.identifier)")
+			   print("Quality: \(voice.quality.rawValue)")
+			   print("Language: \(voice.language)")
+			   print("---")
+		   }
+	   }
     
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
@@ -159,10 +173,10 @@ struct ContentView: View {
                                             let angle = Angle.degrees((seconds.truncatingRemainder(dividingBy: 24)) / 24 * 360)
                                             Text(zodiacSymbol)
                                                 .font(.system(size: 640, weight: .bold))
-                                                .foregroundColor(Color.black.opacity(0.3))
+                                                .foregroundColor(Color.black.opacity(0.2))
                                                 .blur(radius: 0)
                                                 .opacity(1)
-                                                .shadow(color: .white, radius: 30)
+                                                .shadow(color: .white, radius: 50)
                                                 .rotation3DEffect(angle, axis: (x: 0, y: 1, z: 0))
                                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                                 .allowsHitTesting(false)
@@ -186,6 +200,7 @@ struct ContentView: View {
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
                                         speak("Hi \(profile.nickname), Your Era spans \(numberString) Seconds")
+										printAvailableVoices()
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
