@@ -128,7 +128,7 @@ struct ContentView: View {
 	
 	private func printAvailableVoices() {
 		   let voices = AVSpeechSynthesisVoice.speechVoices()
-		   let enUSVoices = voices.filter { $0.language.starts(with: "de") }
+		   let enUSVoices = voices.filter { $0.language.starts(with: "en") }
 		   
 		   print("Available en-US voices:")
 		   for voice in enUSVoices {
@@ -175,8 +175,8 @@ struct ContentView: View {
                                                 .font(.system(size: 640, weight: .bold))
                                                 .foregroundColor(Color.black.opacity(0.2))
                                                 .blur(radius: 0)
-                                                .opacity(1)
-                                                .shadow(color: .white, radius: 50)
+												.shadow(color: userColor, radius: 100)
+												.shadow(color: .white, radius: 50, x: 0, y: -70)
                                                 .rotation3DEffect(angle, axis: (x: 0, y: 1, z: 0))
                                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                                 .allowsHitTesting(false)
@@ -188,13 +188,14 @@ struct ContentView: View {
                                         .font(.largeTitle)
                                         .foregroundColor(.white)
                                         .shadow(radius: 5)
-                                        .padding(.bottom, 100)
+                                        .padding(.bottom, 170)
                                         .multilineTextAlignment(.center)
 
                                     Text("Your Era spans\n ")
                                         .foregroundColor(.white)
                                         .font(Font.system(size: 30, weight: .light, design: .default))
                                         .multilineTextAlignment(.center)
+										.padding(.bottom, -30)
                                     
                                     // running seconds -------------------------------------------------------------------
                                     Button(action: {
@@ -230,15 +231,13 @@ struct ContentView: View {
                                     Text("seconds")
                                         .foregroundColor(.white)
                                         .font(Font.system(size: 30, weight: .light, design: .default))
-                                        .onChange(of: lifetimeDigits) { _, newDigits in
-                                            previousDigits = newDigits
-                                        }
-                                        .padding(.bottom, 180)
+                                        .padding(.bottom, 160)
 
                                     // zodiac ------------------------------------------------------------------------------------
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                         Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
                                             .foregroundColor(.white)
+											.opacity(0.5)
                                     }
                                     
                                     if notificationsEnabled {
