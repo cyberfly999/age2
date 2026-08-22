@@ -88,6 +88,14 @@ struct ContentView: View {
     @State private var animatePulse = false
     
     private let speechDelegateHandler = SpeechSynthesizerDelegateHandler()
+	
+	private let comment: Array<String> = [
+		"This is outstanding!",
+		"Marvellous",
+		"Hueregeil",
+		"Congrats!",
+		"Arrigato"
+	]
     
     // MARK: - Removed lifetimeInSecondsParts usage
     
@@ -191,7 +199,7 @@ struct ContentView: View {
                                     // running seconds -------------------------------------------------------------------
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
-                                        speak("Hi \(profile.nickname), Your Era spans \(numberString) Seconds")
+                                        speak("Hi \(profile.nickname)! \(comment[0]) Your Era spans \(numberString) Seconds")
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
