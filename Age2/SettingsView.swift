@@ -71,8 +71,9 @@ struct SettingsView: View {
     @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
     @AppStorage("selectedVoiceIdentifier") private var selectedVoiceIdentifier: String = ""
 
-	@State private var notificationIntervals: [NotificationInterval] = []
+    @State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
+    @State private var speechSynthesizer: AVSpeechSynthesizer? = nil
 
     let notificationUnits = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Months", "Years"]
     
@@ -88,10 +89,10 @@ struct SettingsView: View {
     
     var body: some View {
         Form {
-			
-			Section(header: Text("Zodiac")) {
-				Toggle("Show Zodiac", isOn: $showZodiac)
-			}
+            
+            Section(header: Text("Zodiac")) {
+                Toggle("Show Zodiac", isOn: $showZodiac)
+            }
             
             Section(header: Text("Voice")) {
                 Picker("Voice", selection: $selectedVoiceIdentifier) {
@@ -105,6 +106,20 @@ struct SettingsView: View {
                         selectedVoiceIdentifier = first.identifier
                     }
                 }
+                Button(action: {
+                    let utterance = AVSpeechUtterance(string: "This is a voice preview.")
+                    if let voice = availableVoices.first(where: { $0.identifier == selectedVoiceIdentifier }) {
+                        utterance.voice = voice
+                    }
+                    let synth = speechSynthesizer ?? AVSpeechSynthesizer()
+                    synth.stopSpeaking(at: .immediate)
+                    synth.speak(utterance)
+                    speechSynthesizer = synth
+                }) {
+                    Label("Preview Voice", systemImage: "")
+                }
+                .buttonStyle(.borderedProminent)
+                .padding(.top, 4)
             }
             
             Section(header: Text("Notifications")) {
