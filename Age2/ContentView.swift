@@ -130,20 +130,6 @@ struct ContentView: View {
         isSpeaking = true
         speechSynthesizer.speak(utterance)
     }
-	
-	private func printAvailableVoices() {
-		   let voices = AVSpeechSynthesisVoice.speechVoices()
-		   let enUSVoices = voices.filter { $0.language.starts(with: "en") }
-		   
-		   print("Available en-US voices:")
-		   for voice in enUSVoices {
-			   print("Name: \(voice.name)")
-			   print("Identifier: \(voice.identifier)")
-			   print("Quality: \(voice.quality.rawValue)")
-			   print("Language: \(voice.language)")
-			   print("---")
-		   }
-	   }
     
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
@@ -206,7 +192,6 @@ struct ContentView: View {
                                     Button(action: {
                                         let numberString = lifetimeDigits.map(String.init).joined()
                                         speak("Hi \(profile.nickname), Your Era spans \(numberString) Seconds")
-										printAvailableVoices()
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
