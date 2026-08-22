@@ -1,4 +1,5 @@
 import SwiftUI
+import AVFoundation
 
 let presetAmounts = [10, 100, 1000, 10000, 100000]
 let notificationIntervalsKey = "notificationIntervals"
@@ -68,11 +69,16 @@ struct SettingsView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = false
     @AppStorage(notificationIntervalsKey) private var notificationIntervalsData: Data = Data()
+    @AppStorage("selectedVoiceIdentifier") private var selectedVoiceIdentifier: String = ""
 
 	@State private var notificationIntervals: [NotificationInterval] = []
     @State private var showNotificationOptions = false
 
     let notificationUnits = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Months", "Years"]
+    
+    private var availableVoices: [AVSpeechSynthesisVoice] {
+        AVSpeechSynthesisVoice.speechVoices().sorted { $0.name < $1.name }
+    }
     
     private func saveNotificationIntervals() {
         if let encoded = try? JSONEncoder().encode(notificationIntervals) {
@@ -86,6 +92,21 @@ struct SettingsView: View {
 			Section(header: Text("Zodiac")) {
 				Toggle("Show Zodiac", isOn: $showZodiac)
 			}
+            
+            Section(header: Text("Voice")) {
+                Picker("Voice", selection: $selectedVoiceIdentifier) {
+                    ForEach(availableVoices, id: \.identifier) { voice in
+                        Text("\(voice.name) (\(voice.language))").tag(voice.identifier)
+                    }
+                }
+                .pickerStyle(.menu)
+                .onAppear {
+                    if selectedVoiceIdentifier.isEmpty, let first = availableVoices.first {
+                        selectedVoiceIdentifier = first.identifier
+                    }
+                }
+            }
+            
             Section(header: Text("Notifications")) {
                 Toggle("Enable Notifications", isOn: $notificationsEnabled)
                     .onChange(of: notificationsEnabled) { _, newValue in

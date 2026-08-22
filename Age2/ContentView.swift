@@ -51,6 +51,7 @@ struct ContentView: View {
     @AppStorage("notificationsEnabled") private var notificationsEnabled: Bool = true
     @AppStorage("showZodiac") private var showZodiac: Bool = true
     @AppStorage("userColorHex") private var userColorHex: String = "#800080"
+    @AppStorage("selectedVoiceIdentifier") private var selectedVoiceIdentifier: String = ""
 
     private var userColor: Color { Color(hex: userColorHex) ?? .purple }
 
@@ -108,19 +109,23 @@ struct ContentView: View {
     }
     
     private func speak(_ text: String) {
-        guard !speechSynthesizer.isSpeaking else { return }
         let utterance = AVSpeechUtterance(string: text)
-        // Try to find a male voice for the current locale
-        let currentLocale = Locale.current.identifier
-		let voice = AVSpeechSynthesisVoice.speechVoices().last {
-            $0.language == currentLocale && $0.gender == .female
+        // Use selected voice if set, otherwise fallback.
+        let voice: AVSpeechSynthesisVoice? = {
+            if !selectedVoiceIdentifier.isEmpty {
+                return AVSpeechSynthesisVoice.speechVoices().first { $0.identifier == selectedVoiceIdentifier }
+            } else {
+                return nil
+            }
+        }()
+        if let customVoice = voice {
+            utterance.voice = customVoice
+        } else {
+            // Fallback: Try current locale, then default
+            let currentLocale = Locale.current.identifier
+            let fallback = AVSpeechSynthesisVoice(language: currentLocale)
+            utterance.voice = fallback
         }
-        // Fallback: Try to find any male voice for the language (not region-specific)
-        let languageCode = Locale.current.language.languageCode?.identifier ?? "de"
-        let fallbackVoice = AVSpeechSynthesisVoice.speechVoices().last {
-			$0.language.hasPrefix(languageCode) && $0.gender == .female
-        }
-        utterance.voice = voice ?? fallbackVoice ?? AVSpeechSynthesisVoice(language: currentLocale)
         speechSynthesizer.delegate = speechDelegateHandler
         isSpeaking = true
         speechSynthesizer.speak(utterance)
@@ -443,4 +448,3 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
-
