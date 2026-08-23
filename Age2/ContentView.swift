@@ -27,6 +27,43 @@ private func requestNotificationAuthorizationIfNeeded() {
     }
 }
 
+// MARK: - CodableUserProfile
+
+struct CodableUserProfile: Codable {
+    var id: UUID
+    var nickname: String
+    var name: String?
+    var prename: String?
+    var dateOfBirth: Date
+    var timeOfBirth: Date
+    var gender: String?
+    var timeZoneIdentifier: String
+
+    init(from userProfile: UserProfile) {
+        self.id = userProfile.id
+        self.nickname = userProfile.nickname
+        self.name = userProfile.name
+        self.prename = userProfile.prename
+        self.dateOfBirth = userProfile.dateOfBirth
+        self.timeOfBirth = userProfile.timeOfBirth
+        self.gender = userProfile.gender
+        self.timeZoneIdentifier = userProfile.timeZoneIdentifier
+    }
+
+    func toUserProfile() -> UserProfile {
+        let profile = UserProfile(
+            id: id,
+            nickname: nickname,
+            name: name,
+            prename: prename,
+            dateOfBirth: dateOfBirth,
+            timeOfBirth: timeOfBirth,
+            gender: gender,
+            timeZoneIdentifier: timeZoneIdentifier
+        )
+        return profile
+    }
+}
 
 // MARK: - SpeechSynthesizerDelegateHandler
 
@@ -52,6 +89,8 @@ struct ContentView: View {
     @AppStorage("showZodiac") private var showZodiac: Bool = true
     @AppStorage("userColorHex") private var userColorHex: String = "#800080"
     @AppStorage("selectedVoiceIdentifier") private var selectedVoiceIdentifier: String = ""
+    
+    @AppStorage("activeProfileJSON") private var activeProfileJSON: String = ""
 
     private var userColor: Color { Color(hex: userColorHex) ?? .purple }
 
@@ -66,10 +105,6 @@ struct ContentView: View {
     @State private var showSplash = true
     private let showSplashFor: TimeInterval = 2
 
-    @State private var hasCheckedProfiles = false
-
-    private var hasProfile: Bool { profiles.first != nil }
-        
     @State private var previousDigits: [Int] = []
     
     private var lifetimeDigits: [Int] {
@@ -88,56 +123,82 @@ struct ContentView: View {
     @State private var animatePulse = false
     
     private let speechDelegateHandler = SpeechSynthesizerDelegateHandler()
-	
-	private let greeting: Array<String> = [
-		"Hi!",
-		"Hello!",
-		"Arrigato.",
-		"Yo!"
-	]
-	
-	private let comment: Array<String> = [
-		"This is outstanding!",
-		"Marvellous!",
-		"Awesome!",
-		"Really..?",
-		"Congrats!"
-	]
-	
-	private let answer: Array<String> = [
-		"Your Era spans",
-		"Your Lifetime is",
-		"The Mileage is",
-		"The Age of your Universe is",
-		"You are on your way since"
-	]
-	
-	private func randomGreeting() -> String {
-		return greeting.randomElement()!
-	}
-	
-	private func randomComment() -> String {
-		return comment.randomElement()!
-	}
     
-	private func randomAnswer() -> String {
-		return answer.randomElement()!
-	}
-	
-    // MARK: - Removed lifetimeInSecondsParts usage
+    private let greeting: Array<String> = [
+        "Hi!",
+        "Hello!",
+        "Arrigato.",
+        "Yo!"
+    ]
     
-    private func handleInitialScreen() {
-        if profiles.isEmpty {
-            showOnboarding = true
-            activeProfile = nil
-        } else {
+    private let comment: Array<String> = [
+        "This is outstanding!",
+        "Marvellous!",
+        "Awesome!",
+        "Really..?",
+        "Congrats!"
+    ]
+    
+    private let answer: Array<String> = [
+        "Your Era spans",
+        "Your Lifetime is",
+        "The Mileage is",
+        "The Age of your Universe is",
+        "You are on your way since"
+    ]
+    
+    private func randomGreeting() -> String {
+        return greeting.randomElement()!
+    }
+    
+    private func randomComment() -> String {
+        return comment.randomElement()!
+    }
+    
+    private func randomAnswer() -> String {
+        return answer.randomElement()!
+    }
+    
+    // MARK: - Helper
+
+    private func profileMatchingID(_ idString: String) -> UserProfile? {
+        guard let uuid = UUID(uuidString: idString) else { return nil }
+        return profiles.first(where: { $0.id == uuid })
+    }
+    
+    /// Update root screen state after splash or profile changes
+    private func updateRootScreenState() {
+        if let storedProfile = loadActiveProfileFromAppStorage() {
+            activeProfile = storedProfile
+            // Ensure SwiftData sync
+            if !profiles.contains(where: { $0.id == storedProfile.id }) {
+                modelContext.insert(storedProfile)
+                do {
+                    try modelContext.save()
+                } catch {
+                    print("Failed to save loaded profile from AppStorage to SwiftData: \(error)")
+                }
+            }
             showOnboarding = false
             showProfileForm = false
-            activeProfile = profiles.first
+        } else {
+            if profiles.isEmpty {
+                showOnboarding = true
+                activeProfile = nil
+                clearActiveProfileInAppStorage()
+            } else {
+                activeProfile = profiles.first
+                if let active = activeProfile {
+                    saveActiveProfileToAppStorage(active)
+                } else {
+                    clearActiveProfileInAppStorage()
+                }
+                showOnboarding = false
+                showProfileForm = false
+            }
         }
-        hasCheckedProfiles = true
     }
-
+    
     /// Requests notification permission if not already granted.
     private func setupNotifications() {
         requestNotificationAuthorizationIfNeeded()
@@ -166,10 +227,44 @@ struct ContentView: View {
         speechSynthesizer.speak(utterance)
     }
     
+    // MARK: - AppStorage Codable Helpers
+    
+    private func saveActiveProfileToAppStorage(_ profile: UserProfile) {
+        let codable = CodableUserProfile(from: profile)
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(codable)
+            if let jsonString = String(data: data, encoding: .utf8) {
+                activeProfileJSON = jsonString
+            }
+        } catch {
+            print("Failed to encode activeProfile for AppStorage: \(error)")
+        }
+    }
+    
+    private func loadActiveProfileFromAppStorage() -> UserProfile? {
+        guard !activeProfileJSON.isEmpty,
+              let data = activeProfileJSON.data(using: .utf8) else { return nil }
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let codable = try decoder.decode(CodableUserProfile.self, from: data)
+            return codable.toUserProfile()
+        } catch {
+            print("Failed to decode activeProfile from AppStorage: \(error)")
+            return nil
+        }
+    }
+    
+    private func clearActiveProfileInAppStorage() {
+        activeProfileJSON = ""
+    }
+    
     var body: some View {
         // Prevent onboarding/profile form if a profile exists
-        let shouldShowOnboarding = hasCheckedProfiles && showOnboarding && !hasProfile && !showSplash
-        let shouldShowProfileForm = hasCheckedProfiles && showProfileForm && !hasProfile && !showSplash && !showOnboarding
+        let shouldShowOnboarding = showOnboarding && activeProfile == nil && !showSplash
+        let shouldShowProfileForm = showProfileForm && !showSplash && !showOnboarding
         
         ZStack {
             Group {
@@ -189,7 +284,7 @@ struct ContentView: View {
                            // FireworksView()
                              //   .ignoresSafeArea()
 
-                            // main view
+                            // main view with running seconds
                             ZStack {
                                 if showZodiac {
                                     let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
@@ -201,8 +296,8 @@ struct ContentView: View {
                                                 .font(.system(size: 640, weight: .bold))
                                                 .foregroundColor(Color.black.opacity(0.2))
                                                 .blur(radius: 0)
-												.shadow(color: userColor, radius: 100)
-												.shadow(color: .white, radius: 50, x: 0, y: -70)
+                                                .shadow(color: userColor, radius: 100)
+                                                .shadow(color: .white, radius: 50, x: 0, y: -70)
                                                 .rotation3DEffect(angle, axis: (x: 0, y: 1, z: 0))
                                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                                 .allowsHitTesting(false)
@@ -221,7 +316,7 @@ struct ContentView: View {
                                         .foregroundColor(.white)
                                         .font(Font.system(size: 30, weight: .light, design: .default))
                                         .multilineTextAlignment(.center)
-										.padding(.bottom, -30)
+                                        .padding(.bottom, -30)
                                     
                                     // running seconds -------------------------------------------------------------------
                                     Button(action: {
@@ -262,7 +357,7 @@ struct ContentView: View {
                                     if showZodiac && !ZodiacCalculator.zodiacSignText(for: activeProfile).isEmpty {
                                         Text("Your Zodiac is " + ZodiacCalculator.zodiacSignText(for: activeProfile))
                                             .foregroundColor(.white)
-											.opacity(0.5)
+                                            .opacity(0.5)
                                     }
                                     
                                     if notificationsEnabled {
@@ -349,11 +444,12 @@ struct ContentView: View {
                 withAnimation(.easeOut(duration: 0.5)) {
                     showSplash = false
                 }
-                handleInitialScreen()
+                // After splash, update root screen state once
+                updateRootScreenState()
             }
         }
         .onChange(of: profiles) { _, _ in
-            handleInitialScreen()
+            updateRootScreenState()
         }
         .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { time in
             now = time
@@ -386,6 +482,7 @@ struct ContentView: View {
                     do {
                         try modelContext.save()
                         activeProfile = tempProfile
+                        saveActiveProfileToAppStorage(tempProfile)
                         // Hide onboarding and show profile form for further edits
                         showOnboarding = false
                         profileFormInitial = tempProfile
@@ -406,6 +503,7 @@ struct ContentView: View {
             if activeProfile == nil && profiles.isEmpty {
                 showOnboarding = true
                 showProfileForm = false
+                clearActiveProfileInAppStorage()
             }
         }) {
             ProfileFormView(
@@ -430,8 +528,8 @@ struct ContentView: View {
                         try modelContext.save()
                         NotificationManager.shared.setupNotifications()
                         activeProfile = profile
+                        saveActiveProfileToAppStorage(profile)
                         showProfileForm = false
-                        // Hide onboarding and profile form after saving
                         showOnboarding = false
                         showProfileForm = false
                     } catch {
@@ -444,6 +542,7 @@ struct ContentView: View {
                         // No profiles, show onboarding again
                         showOnboarding = true
                         showProfileForm = false
+                        clearActiveProfileInAppStorage()
                     } else {
                         // Profiles exist, hide onboarding and profile form
                         showOnboarding = false
@@ -468,3 +567,4 @@ struct ContentView: View {
 #Preview {
     return ContentView()
 }
+
