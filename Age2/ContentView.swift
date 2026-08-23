@@ -89,14 +89,41 @@ struct ContentView: View {
     
     private let speechDelegateHandler = SpeechSynthesizerDelegateHandler()
 	
+	private let greeting: Array<String> = [
+		"Hi!",
+		"Hello!",
+		"Arrigato.",
+		"Yo!"
+	]
+	
 	private let comment: Array<String> = [
 		"This is outstanding!",
-		"Marvellous",
-		"Hueregeil",
-		"Congrats!",
-		"Arrigato"
+		"Marvellous!",
+		"Awesome!",
+		"Really..?",
+		"Congrats!"
 	]
+	
+	private let answer: Array<String> = [
+		"Your Era spans",
+		"Your Lifetime is",
+		"The Mileage is",
+		"The Age of your Universe is",
+		"You are on your way since"
+	]
+	
+	private func randomGreeting() -> String {
+		return greeting.randomElement()!
+	}
+	
+	private func randomComment() -> String {
+		return comment.randomElement()!
+	}
     
+	private func randomAnswer() -> String {
+		return answer.randomElement()!
+	}
+	
     // MARK: - Removed lifetimeInSecondsParts usage
     
     private func handleInitialScreen() {
@@ -198,8 +225,8 @@ struct ContentView: View {
                                     
                                     // running seconds -------------------------------------------------------------------
                                     Button(action: {
-                                        let numberString = lifetimeDigits.map(String.init).joined()
-                                        speak("Hi \(profile.nickname)! \(comment[0]) Your Era spans \(numberString) Seconds")
+                                        let secondstring = lifetimeDigits.map(String.init).joined() + " Seconds"
+                                        speak("\(randomGreeting()) \(profile.nickname)! \(randomComment()) \(randomAnswer()) \(secondstring)")
                                     }) {
                                         HStack(spacing: 0) {
                                             ForEach(Array(lifetimeDigits.enumerated()), id: \.offset) { _, digit in
