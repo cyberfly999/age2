@@ -285,9 +285,9 @@ struct ContentView: View {
 						    //FireworksView()
 							 //   .ignoresSafeArea()
 
-							// Clouds background -----------------------------------------------------
+							// Clouds background --------------------------------------------------------
 							//CloudBackgroundView()
-							 //   .ignoresSafeArea()
+							  //  .ignoresSafeArea()
 
 							// main view with running seconds
                             ZStack {
