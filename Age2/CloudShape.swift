@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+
 // MARK: - Cloud Shape -------------------------------------------------------
 /// A very simple “cloud” shape made from a few overlapping ellipses.
 struct CloudShape: Shape {
@@ -86,6 +87,8 @@ struct MovingCloud: View {
 struct CloudBackgroundView: View {
 	// MARK: Configuration
 	private let numberOfClouds = 6
+	@AppStorage("userColorHex") private var userColorHex: String = "#800080"
+	private var userColor: Color { Color(hex: userColorHex) ?? .purple }
 
 	var body: some View {
 		GeometryReader { geometry in
@@ -94,7 +97,7 @@ struct CloudBackgroundView: View {
 				LinearGradient(
 					gradient: Gradient(colors: [
 						Color.blue.opacity(0.45),
-						Color.purple.opacity(0.55)
+						userColor
 					]),
 					startPoint: .topLeading,
 					endPoint: .bottomTrailing

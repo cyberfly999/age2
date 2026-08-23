@@ -134,6 +134,7 @@ struct ContentView: View {
     private let comment: Array<String> = [
         "This is outstanding!",
         "Marvellous!",
+		"Oh yeah!",
         "Awesome!",
         "Really..?",
         "Congrats!"
@@ -281,14 +282,14 @@ struct ContentView: View {
                             .ignoresSafeArea()
                             
 							// Fireworks background -----------------------------------------------------
-						   // FireworksView()
+						    //FireworksView()
 							 //   .ignoresSafeArea()
 
 							// Clouds background -----------------------------------------------------
-							CloudBackgroundView()
-							    .ignoresSafeArea()
+							//CloudBackgroundView()
+							 //   .ignoresSafeArea()
 
- // main view with running seconds
+							// main view with running seconds
                             ZStack {
                                 if showZodiac {
                                     let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
