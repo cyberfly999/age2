@@ -280,11 +280,15 @@ struct ContentView: View {
                             )
                             .ignoresSafeArea()
                             
-                            // Fireworks background -----------------------------------------------------
-                           // FireworksView()
-                             //   .ignoresSafeArea()
+							// Fireworks background -----------------------------------------------------
+						   // FireworksView()
+							 //   .ignoresSafeArea()
 
-                            // main view with running seconds
+							// Clouds background -----------------------------------------------------
+							CloudBackgroundView()
+							    .ignoresSafeArea()
+
+ // main view with running seconds
                             ZStack {
                                 if showZodiac {
                                     let zodiacSymbol = ZodiacCalculator.zodiacSignText(for: activeProfile, style: .symbol)
