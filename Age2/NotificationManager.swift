@@ -53,6 +53,37 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			}
 		}
 	}
+	
+	func addNotification(time: Double, title: String, subtitle: String, body: String) {
+		let center = UNUserNotificationCenter.current()
+
+		let addRequest = {
+			let content = UNMutableNotificationContent()
+			content.title = title
+			content.subtitle = subtitle
+			content.body = body
+			content.sound = UNNotificationSound.default
+
+			let trigger = UNTimeIntervalNotificationTrigger(timeInterval: time, repeats: false)
+
+			let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+			center.add(request)
+		}
+
+		center.getNotificationSettings { settings in
+			if settings.authorizationStatus == .authorized {
+				addRequest()
+			} else {
+				center.requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+					if success {
+						addRequest()
+					} else {
+						print("Authorization declined")
+					}
+				}
+			}
+		}
+	}
 
 	/// Schedules 10 notifications, each 100 seconds apart, starting from now.
 	func scheduleTenNotifications() {
