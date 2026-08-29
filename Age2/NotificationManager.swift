@@ -87,6 +87,24 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 			}
 		}
 	}
+	
+	/// Schedules parameterized notifications from now
+		func scheduleMultipleNotifs(number: Int, interval: Int, title: String, subtitle: String, body: String) {
+			for i in 1...number {
+				let content = UNMutableNotificationContent()
+				content.title = title
+				content.subtitle = subtitle
+				content.body = body
+				content.sound = .default
+				let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(interval * i), repeats: false)
+				let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+				UNUserNotificationCenter.current().add(request) { error in
+					if let error = error {
+						print("Failed to schedule notification #\(i): \(error)")
+					}
+				}
+			}
+		}
 }
 
 // MARK: - UIApplicationDelegate methods for remote notifications
